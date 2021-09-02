@@ -17,4 +17,4 @@ clean:
 $(OBJ_FILES): $(DIR_OBJ)/%.o: %.c
 	@echo "Compiling $(shell basename $<)"
 	@mkdir -p $(shell dirname $@)
-	@gcc -O0 -c $< -o $@
+	@gcc -g -O0 -c $< -o $@
