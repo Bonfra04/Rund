@@ -1,0 +1,24 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "type": "shell",
+            "linux": {
+                "command": "make"
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "clear": true,
+                "close": false,
+                "echo": true,
+                "focus": true,
+                "reveal": "always"
+            }
+        }
+    ],
+}

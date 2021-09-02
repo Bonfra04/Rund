@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Linux",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/rund.elf",
+            "MIMode": "gdb",
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "build"
+        }
+    ]
+}
