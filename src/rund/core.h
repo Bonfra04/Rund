@@ -9,7 +9,6 @@ typedef uint32_t color_t;
 typedef struct build_context
 {
 	size_t width, height;
-	uint64_t x, y;
 	color_t* backbuffer;
 } build_context_t;
 
@@ -17,6 +16,19 @@ typedef struct dimension
 {
 	size_t width, height;
 } dimension_t;
+
+typedef struct coord
+{
+	uint64_t x, y;
+} coord_t;
+
+typedef struct draw_data
+{
+	dimension_t dimensions;
+	coord_t coords;
+} draw_data_t;
+
+#define NULL_DRAW ((draw_data_t){ { 0, 0 }, { 0, 0 } })
 
 typedef enum axis_alignment
 {

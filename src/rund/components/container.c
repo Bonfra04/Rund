@@ -1,6 +1,5 @@
 #include "container.h"
 #include <stdlib.h>
-#include <stdio.h>
 #include "../log.h"
 
 container_decoration_t def_dec_contaner = { .color = 0xFF0000 };

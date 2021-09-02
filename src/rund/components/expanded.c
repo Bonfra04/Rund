@@ -1,6 +1,5 @@
 #include "expanded.h"
 #include <stdlib.h>
-#include <stdio.h>
 #include "../log.h"
 
 expanded_t* expanded_create(component_t* child, uint64_t flex)

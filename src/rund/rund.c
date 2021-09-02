@@ -5,10 +5,11 @@
 #include <string.h>
 #include "log.h"
 
-dimension_t draw_component(const component_t* component, const build_context_t context);
-dimension_t draw_container(const container_t* container, const build_context_t context);
-dimension_t draw_row(const row_t* row, const build_context_t context);
-dimension_t draw_expanded(const expanded_t* row, const build_context_t context);
+draw_data_t draw_component(const component_t* component, const build_context_t context);
+draw_data_t draw_container(const container_t* container, const build_context_t context);
+draw_data_t draw_row(const row_t* row, const build_context_t context);
+draw_data_t draw_expanded(const expanded_t* row, const build_context_t context);
+draw_data_t draw_align(const align_t* row, const build_context_t context);
 
 void run_app(const rund_app_t* app)
 {
@@ -19,8 +20,6 @@ void run_app(const rund_app_t* app)
 		build_context_t context;
 		context.width = app->width;
 		context.height = app->height;
-		context.x = 0;
-		context.y = 0;
 		context.backbuffer = calloc(app->width * app->height, sizeof(color_t));
 		draw_component(app->root, context);
 
@@ -36,9 +35,9 @@ void run_app(const rund_app_t* app)
 	printf("Rund app terminated\n");
 }
 
-dimension_t draw_component(const component_t* component, const build_context_t context)
+draw_data_t draw_component(const component_t* component, const build_context_t context)
 {
-	dimension_t dim = { 0, 0 };
+	draw_data_t data = NULL_DRAW;
 
 	if(component)
 		switch (component->type)
@@ -46,46 +45,51 @@ dimension_t draw_component(const component_t* component, const build_context_t c
 		case EMPTY:
 			break;
 		case CONTAINER:
-			dim = draw_container((const container_t*)component, context);
+			data = draw_container((const container_t*)component, context);
 			break;
 		case ROW:
-			dim = draw_row((const row_t*)component, context);
+			data = draw_row((const row_t*)component, context);
 			break;
 		case EXPANDED:
-			dim = draw_expanded((const expanded_t*)component, context);
+			data = draw_expanded((const expanded_t*)component, context);
+			break;
+		case ALIGN:
+			data = draw_align((const align_t*)component, context);
 			break;
 		default:
 			ERROR("Unrecognized component type: [%d]", 0, (int)component->type);
 			break;
 		}
 
-	return dim;
+	return data;
 }
 
-dimension_t draw_container(const container_t* container, const build_context_t context)
+draw_data_t draw_container(const container_t* container, const build_context_t context)
 {
-	dimension_t dim;
-	dim.height = container->height <= abs(context.height - context.y) ? container->height : abs(context.height - context.y);
-	dim.width = container->width <= abs(context.width - context.x) ? container->width : abs(context.width - context.x);
-	
-	for (uint64_t y = 0; y < dim.height; y++)
-		for (uint64_t x = 0; x < dim.width; x++)
-			context.backbuffer[(context.y + y) * dim.width + (context.x + x)] = container->decoration.color;
+	draw_data_t data;
+	data.dimensions.height = container->height <= context.height ? container->height : context.height;
+	data.dimensions.width = container->width <= context.width ? container->width : context.width;
+	data.coords.x = 0;
+	data.coords.y = 0;
+
+	for (uint64_t y = 0; y < data.dimensions.height; y++)
+		for (uint64_t x = 0; x < data.dimensions.width; x++)
+			context.backbuffer[y * data.dimensions.width + x] = container->decoration.color;
 
 	build_context_t child_context = context;
 	child_context.width = container->width;
 	child_context.height = container->height;
 	draw_component(container->child, child_context);
 
-	return dim;
+	return data;
 }
 
-dimension_t draw_row(const row_t* row, const build_context_t context)
+draw_data_t draw_row(const row_t* row, const build_context_t context)
 {
-	dimension_t dim = { 0, 0 };
+	draw_data_t data = NULL_DRAW;
 
 	color_t* backbuffers[row->children_count];
-	dimension_t dimensions[row->children_count];
+	draw_data_t datas[row->children_count];
 
 	memset(backbuffers, 0, sizeof(color_t*) * row->children_count);
 
@@ -104,14 +108,12 @@ dimension_t draw_row(const row_t* row, const build_context_t context)
 		backbuffers[i] = calloc(context.width * context.height, sizeof(color_t));
 
 		build_context_t child_context = context;
-		child_context.x = 0;
-		child_context.y = 0;
 		child_context.backbuffer = backbuffers[i];
 
-		dimensions[i] = draw_component(child, child_context);
+		datas[i] = draw_component(child, child_context);
 
-		unflexible_size.width += dimensions[i].width;
-		unflexible_size.height = dimensions[i].height > unflexible_size.height ? dimensions[i].height : unflexible_size.height;
+		unflexible_size.width += datas[i].dimensions.width;
+		unflexible_size.height = datas[i].dimensions.height > unflexible_size.height ? datas[i].dimensions.height : unflexible_size.height;
 	}
 
 	dimension_t left_size = { context.width - unflexible_size.width, context.height };
@@ -128,37 +130,63 @@ dimension_t draw_row(const row_t* row, const build_context_t context)
 		backbuffers[i] = calloc(space.width * space.height, sizeof(color_t));
 
 		build_context_t child_context = context;
-		child_context.x = 0;
-		child_context.y = 0;
 		child_context.width = space.width;
 		child_context.height = space.height;
 		child_context.backbuffer = backbuffers[i];
 
-		dimensions[i] = draw_component((component_t*)child, child_context);
+		datas[i] = draw_component((component_t*)child, child_context);
 	}
 
 	for(uint64_t i = 0; i < row->children_count; i++)
 	{
-		if(backbuffers[i] == 0)
-			continue;
+		for (uint64_t y = 0; y < datas[i].dimensions.height; y++)
+			for (uint64_t x = 0; x < datas[i].dimensions.width; x++)
+					context.backbuffer[(y + datas[i].coords.y) * context.width + (data.dimensions.width + x)] = backbuffers[i][(y + datas[i].coords.y) * datas[i].dimensions.width + (x + datas[i].coords.x)];
 
-		for (uint64_t y = 0; y < dimensions[i].height; y++)
-			for (uint64_t x = 0; x < dimensions[i].width; x++)
-					context.backbuffer[(context.y + y) * context.width + (context.x + dim.width + x)] = backbuffers[i][y * dimensions[i].width + x];
-
-		if(dimensions[i].height > dim.height)
-			dim.height = dimensions[i].height;
-		dim.width += dimensions[i].width;
+		if((datas[i].dimensions.height + datas[i].coords.y) > data.dimensions.height)
+			data.dimensions.height = (datas[i].dimensions.height + datas[i].coords.y);
+		data.dimensions.width += datas[i].dimensions.width;
 	}
 
 	for(uint64_t i = 0; i < row->children_count; i++)
-		if(backbuffers[i] == 0)
-			free(backbuffers[i]);
+		free(backbuffers[i]);
 
-	return dim;
+	return data;
 }
 
-dimension_t draw_expanded(const expanded_t* expanded, build_context_t context)
+draw_data_t draw_expanded(const expanded_t* expanded, build_context_t context)
 {
 	return draw_component(expanded->child, context);
+}
+
+draw_data_t draw_align(const align_t* align, const build_context_t context)
+{
+	draw_data_t data = NULL_DRAW;
+
+	color_t* backbuffer = calloc(context.width * context.height, sizeof(color_t));
+
+	build_context_t child_context = context;
+	child_context.backbuffer = backbuffer;
+
+	draw_data_t child_data = draw_component(align->child, child_context);
+
+	float align_x = (align->alignment.x + 1) / 2;
+	float align_y = (align->alignment.y + 1) / 2;
+
+	uint64_t xp = context.width * align_x;
+	uint64_t yp = context.height * align_y;
+
+	uint64_t xc = child_data.dimensions.width * align_x;
+	uint64_t yc = child_data.dimensions.height * align_y;
+
+	for (uint64_t y = 0; y < child_data.dimensions.height; y++)
+		for (uint64_t x = 0; x < child_data.dimensions.width; x++)
+			context.backbuffer[(yp - yc + y) * child_data.dimensions.width + (xp - xc + x)] = backbuffer[y * child_data.dimensions.width + x];
+
+	free(backbuffer);
+
+	data.dimensions = child_data.dimensions;
+	data.coords = (coord_t){ (xp - xc), (yp - yc) };
+
+	return data;
 }

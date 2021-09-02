@@ -25,12 +25,14 @@ int main()
 					Container(NULL, ContainerDec{ .color = 0xFFFFFF }),
 					Flex(3)
 				),
+				Align(
+					Container(NULL, 100, 100, ContainerDec{ .color = 0xFF00FF }),
+					Alignment(0.0f, 1.0f)
+				),
 				Container(NULL, 100, 100)
 			)
 		)
 	};
 
 	run_app(&app);
-
-	return 0;
 }
