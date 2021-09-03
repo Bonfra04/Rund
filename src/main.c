@@ -26,11 +26,12 @@ int main()
 					Flex(3)
 				),
 				Align(
-					Container(NULL, 100, 100, ContainerDec{ .color = 0xFF00FF }),
+					Container(NULL, 100, 100, ContainerDec{ .color = 0xFF006F }),
 					Alignment(0.0f, 1.0f)
 				),
 				Container(NULL, 100, 100)
-			)
+			),
+			RowDec{ .color = 0xFF00FF}
 		)
 	};
 

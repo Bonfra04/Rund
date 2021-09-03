@@ -5,10 +5,10 @@
 
 typedef struct row_decoration
 {
-	size_t spacing;
-	axis_alignment_t alignment_x;
-	axis_alignment_t alignment_y;
+	color_t color;
 } row_decoration_t;
+
+#define RowDec (row_decoration_t)
 
 typedef struct row
 {

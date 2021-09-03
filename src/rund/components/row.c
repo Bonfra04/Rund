@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "../log.h"
 
-row_decoration_t def_dec_row = { .spacing = 0, .alignment_x = axis_start, .alignment_y = axis_center };
+row_decoration_t def_dec_row = { .color = 0x000000 };
 
 row_t* row_create(component_t** children, uint64_t children_count, row_decoration_t decoration)
 {

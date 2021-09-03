@@ -8,7 +8,8 @@ typedef uint32_t color_t;
 
 typedef struct build_context
 {
-	size_t width, height;
+	size_t max_width, max_height;
+	size_t min_width, min_height;
 	color_t* backbuffer;
 } build_context_t;
 
