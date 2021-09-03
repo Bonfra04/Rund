@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rund.h"
+#include <rund.h>
 #include <stdbool.h>
 
 #ifdef __cplusplus

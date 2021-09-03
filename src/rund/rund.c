@@ -1,6 +1,5 @@
-#include "rund.h"
+#include <rund.h>
 #include "wrapper.h"
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "log.h"
@@ -33,7 +32,7 @@ void run_app(const rund_app_t* app)
 		flush();
 	} while (event_loop());
 
-	printf("Rund app terminated\n");
+	TRACE("Rund app terminated\n", 0);
 }
 
 draw_data_t draw_component(const component_t* component, const build_context_t context)

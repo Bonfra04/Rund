@@ -9,7 +9,7 @@
 #undef UNICODE
 #endif
 
-#include "wrapper.h"
+#include "../wrapper.h"
 #include <stdio.h>
 
 static uint32_t* buffer;

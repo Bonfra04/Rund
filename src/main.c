@@ -1,4 +1,4 @@
-#include "rund/rund.h"
+#include <rund.h>
 
 #include <stdio.h>
 #include <stdarg.h>
