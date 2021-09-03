@@ -207,7 +207,9 @@ draw_data_t draw_align(const align_t* align, const build_context_t context)
 	for (uint64_t y = 0; y < child_data.dimensions.height; y++)
 		for (uint64_t x = 0; x < child_data.dimensions.width; x++)
 		{
-			main_buffer->data[(y_offset + y) * main_buffer->width + (x_offset + x)] = backbuffer.data[y * backbuffer.width + x];
+			color_t* main_pixel = &main_buffer->data[(y_offset + y) * main_buffer->width + (x_offset + x)];
+			color_t* child_pixel = &backbuffer.data[y * backbuffer.width + x];
+			*main_pixel = *child_pixel;
 		}
 
 	buffer_destroy(&backbuffer);
