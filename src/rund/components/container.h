@@ -22,7 +22,7 @@ typedef struct container
 extern "C" {
 #endif
 
-#define DEF_DIM -1
+#define DEF_DIM 0
 extern container_decoration_t def_dec_contaner;
 
 container_t* container_create(component_t* child, size_t width, size_t height, container_decoration_t decoration);
