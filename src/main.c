@@ -30,8 +30,7 @@ int main()
 					Alignment(0.0f, 1.0f)
 				),
 				Container(NULL, 100, 100)
-			),
-			RowDec{ .color = 0xFF00FF}
+			)
 		)
 	};
 

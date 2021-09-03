@@ -9,7 +9,8 @@ typedef enum component_type
 	CONTAINER,
 	ROW,
 	EXPANDED,
-	ALIGN
+	ALIGN,
+	CENTER
 } component_type_t;
 
 typedef struct component

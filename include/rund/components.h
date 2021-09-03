@@ -4,3 +4,4 @@
 #include <rund/components/row.h>
 #include <rund/components/expanded.h>
 #include <rund/components/align.h>
+#include <rund/components/center.h>
