@@ -5,7 +5,7 @@
             "label": "build",
             "type": "shell",
             "linux": {
-                "command": "make"
+                "command": "make PLATFORM=LINUX"
             },
             "problemMatcher": [],
             "group": {

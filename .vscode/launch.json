@@ -8,6 +8,7 @@
             "target": "${workspaceFolder}/bin/demo.elf",
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "build",
+            "terminal": "",
         }
     ]
 }
