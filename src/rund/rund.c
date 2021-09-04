@@ -10,6 +10,7 @@ draw_data_t draw_row(const row_t* row, const build_context_t context);
 draw_data_t draw_expanded(const expanded_t* expanded, const build_context_t context);
 draw_data_t draw_align(const align_t* align, const build_context_t context);
 draw_data_t draw_center(const center_t* center, const build_context_t context);
+draw_data_t draw_constrained_box(const constrained_box_t* constrained_box, const build_context_t context);
 
 void run_app(const rund_app_t* app)
 {
@@ -59,6 +60,9 @@ draw_data_t draw_component(const component_t* component, const build_context_t c
 			break;
 		case CENTER:
 			data = draw_center((const center_t*)component, context);
+			break;
+		case CONSTRAINED_BOX:
+			data = draw_constrained_box((const constrained_box_t*)component, context);
 			break;
 		default:
 			ERROR("Unrecognized component type: [%d]", 0, (int)component->type);
@@ -223,4 +227,15 @@ draw_data_t draw_align(const align_t* align, const build_context_t context)
 draw_data_t draw_center(const center_t* center, const build_context_t context)
 {
 	return draw_align(&(center->align), context);
+}
+
+draw_data_t draw_constrained_box(const constrained_box_t* constrained_box, const build_context_t context)
+{
+	build_context_t child_context = context;
+	child_context.min_height = context.min_height > constrained_box->constraints.min_height ? context.min_height : constrained_box->constraints.min_height;
+	child_context.min_width = context.min_width > constrained_box->constraints.min_width ? context.min_width : constrained_box->constraints.min_width;
+	child_context.max_height = context.max_height < constrained_box->constraints.max_height ? context.max_height : constrained_box->constraints.max_height;
+	child_context.max_width = context.max_width < constrained_box->constraints.max_width ? context.max_width : constrained_box->constraints.max_width;
+	
+	return draw_component(constrained_box->child, child_context);
 }

@@ -29,7 +29,10 @@ int main()
 					Container(NULL, 100, 100, ContainerDec{ .color = 0xFF006F }),
 					Alignment(0.0f, 1.0f)
 				),
-				Container(NULL, 100, 100)
+				ConstrainedBox(
+					Container(NULL, 1, 1),
+					BoxConstraints(10, 10, 30, 30)
+				)
 			)
 		)
 	};
