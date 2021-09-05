@@ -9,8 +9,12 @@ static Display* display;
 static Window window;
 static GC gc;
 
-void create_window(const rund_app_t* app)
+static events_t handlers;
+
+void create_window(const rund_app_t* app, events_t _handlers)
 {
+    handlers = _handlers;
+
     display = XOpenDisplay(NULL);
     int screen = DefaultScreen(display);
     window = XCreateSimpleWindow(display, RootWindow(display, screen),
@@ -48,6 +52,17 @@ bool event_loop()
         {
             case ClientMessage:
                 return false;
+
+            case ButtonPress:
+                if(handlers.mouse_down)
+                    handlers.mouse_down(event.xbutton.x, event.xbutton.y, event.xbutton.button);
+                break;
+
+            case ButtonRelease:
+                if(handlers.mouse_up)
+                    handlers.mouse_up(event.xbutton.x, event.xbutton.y, event.xbutton.button);
+                break;
+
             default:
                 break;
         }

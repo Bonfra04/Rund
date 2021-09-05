@@ -2,7 +2,8 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include "vrg.h"
+#include <rund/utils/vector.h>
+#include <rund/vrg.h>
 
 typedef uint32_t color_t;
 
@@ -33,9 +34,10 @@ typedef struct draw_data
 {
 	dimension_t dimensions;
 	coord_t coords;
+	vector_t childs;
 } draw_data_t;
 
-#define NULL_DRAW ((draw_data_t){ { 0, 0 }, { 0, 0 } })
+#define NULL_DRAW ((draw_data_t){ .dimensions = { 0, 0 }, .coords = { 0, 0 }, .childs = NULL })
 
 typedef enum axis_alignment
 {

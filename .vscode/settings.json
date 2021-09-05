@@ -3,6 +3,8 @@
         "bin/": true,
         "bin-int/": true,
         "Makefile": true,
+        "bonsos.mk": true,
+        "linux.mk": true,
         ".gitignore": true,
     }
 }

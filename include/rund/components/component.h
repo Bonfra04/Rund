@@ -14,15 +14,19 @@ typedef enum component_type
 	CONSTRAINED_BOX
 } component_type_t;
 
+typedef struct component component_t;
+
 typedef struct component
 {
 	component_type_t type;
+	component_t* parent;
 	bool isFlexible;
 } __attribute__((packed)) component_t;
 
 typedef struct flexible
 {
 	component_type_t type;
+	component_t* parent;
 	bool isFlexible;
 	uint64_t flex;
 } __attribute__((packed)) flexible_t;
