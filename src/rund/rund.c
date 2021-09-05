@@ -282,7 +282,6 @@ draw_data_t draw_expanded(const expanded_t* expanded, build_context_t context, u
 draw_data_t draw_align(const align_t* align, const build_context_t context, uint64_t deepness)
 {
 	draw_data_t data = NULL_DRAW;
-	data.childs = vector_create(widget_position_t);
 
 	buffer_t backbuffer = buffer_create(context.max_width, context.max_height);
 
