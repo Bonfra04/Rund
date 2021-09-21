@@ -22,12 +22,12 @@ void create_window(const rund_app_t* app)
 
 bool event_loop()
 {
-    cycle_events(event_handler);
+    return cycle_events(event_handler);
 }
 
 void put_pixel(size_t x, size_t y, uint32_t color)
 {
-    ((uint32_t*)window.framebuffer)[y * window.width + x] = color;
+    ((uint32_t*)window.framebuffer)[y * window.width + x] = 0xFF000000 | (color & 0xFFFFFF);
 }
 
 void flush()
