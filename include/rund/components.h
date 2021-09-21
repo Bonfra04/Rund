@@ -6,3 +6,5 @@
 #include <rund/components/align.h>
 #include <rund/components/center.h>
 #include <rund/components/constrained_box.h>
+#include <rund/components/listener.h>
+#include <rund/components/text.h>

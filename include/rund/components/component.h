@@ -11,7 +11,9 @@ typedef enum component_type
 	EXPANDED,
 	ALIGN,
 	CENTER,
-	CONSTRAINED_BOX
+	CONSTRAINED_BOX,
+	LISTENER,
+	TEXT
 } component_type_t;
 
 typedef struct component component_t;

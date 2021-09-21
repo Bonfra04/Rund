@@ -12,6 +12,8 @@ draw_data_t draw_expanded(const expanded_t* expanded, const build_context_t cont
 draw_data_t draw_align(const align_t* align, const build_context_t context, uint64_t deepness);
 draw_data_t draw_center(const center_t* center, const build_context_t context, uint64_t deepness);
 draw_data_t draw_constrained_box(const constrained_box_t* constrained_box, const build_context_t context, uint64_t deepness);
+draw_data_t draw_listener(const listener_t* listener, const build_context_t context, uint64_t deepness);
+draw_data_t draw_text(const text_t* text, const build_context_t context, uint64_t deepness);
 
 typedef struct widget_position
 {
@@ -24,10 +26,10 @@ typedef struct widget_position
 static vector_t widgets;
 static uint64_t deepness;
 
-static void on_mouse_down(uint64_t x, uint64_t y, uint8_t button)
+static listener_t* get_listener(uint64_t x, uint64_t y)
 {
 	if(!widgets)
-		return;
+		return NULL;
 
 	widget_position_t* target = NULL;
 	for(size_t i = 0; i < vector_size(widgets); i++)
@@ -40,22 +42,47 @@ static void on_mouse_down(uint64_t x, uint64_t y, uint8_t button)
 	}
 
 	if(target == NULL)
-		return;
+		return NULL;
 
 	component_t* component = target->component;
-	while(component != NULL && component->type != EXPANDED)
+	while(component != NULL && component->type != LISTENER)
 		component = component->parent;
 
 	if(component == NULL)
-		return;
+		return NULL;
 
-	TRACE("HIT", 0);
+	return (listener_t*)component;
 }
 
+static void on_mouse_up(uint64_t x, uint64_t y, uint8_t button)
+{
+	listener_t* listener = get_listener(x, y);
+	if(listener == NULL)
+		return;
+
+	if(listener->handlers.on_pointer_up)
+		listener->handlers.on_pointer_up();
+}
+
+static void on_mouse_down(uint64_t x, uint64_t y, uint8_t button)
+{
+	listener_t* listener = get_listener(x, y);
+	if(listener == NULL)
+		return;
+
+	if(listener->handlers.on_pointer_down)
+		listener->handlers.on_pointer_down();
+}
+
+#include "ttf/ttf.h"
+
+static ttf_t ttf;
 
 void run_app(const rund_app_t* app)
 {
-	create_window(app, (events_t){ NULL, on_mouse_down });
+    // ttf_load("Monaco.ttf", &ttf);
+
+	create_window(app, (events_t){ .mouse_down = on_mouse_down, .mouse_up = on_mouse_up });
 
 	widgets = 0;
 
@@ -101,7 +128,7 @@ draw_data_t draw_component(const component_t* component, const component_t* pare
 	if(component)
 	{
 		component_t* c = (component_t*)component;
-		c->parent = parent;
+		c->parent = (component_t*)parent;
 		switch (component->type)
 		{
 		case EMPTY:
@@ -123,6 +150,12 @@ draw_data_t draw_component(const component_t* component, const component_t* pare
 			break;
 		case CONSTRAINED_BOX:
 			data = draw_constrained_box((const constrained_box_t*)component, context, deepness);
+			break;
+		case LISTENER:
+			data = draw_listener((const listener_t*)component, context, deepness);
+			break;
+		case TEXT:
+			data = draw_text((const text_t*)component, context, deepness);
 			break;
 		default:
 			ERROR("Unrecognized component type: [%d]", 0, (int)component->type);
@@ -148,7 +181,7 @@ draw_data_t draw_container(const container_t* container, const build_context_t c
 	build_context_t child_context = context;
 	child_context.max_width = container->width;
 	child_context.max_height = container->height;
-	draw_component(container->child, container, child_context, deepness);
+	draw_component(container->child, (component_t*)container, child_context, deepness);
 
 	return data;
 }
@@ -184,7 +217,7 @@ draw_data_t draw_row(const row_t* row, const build_context_t context, uint64_t d
 		backbuffers[i] = buffer_create(child_context.max_width, child_context.max_height);
 		child_context.backbuffer = backbuffers[i];
 
-		datas[i] = draw_component(child, row, child_context, deepness + 1);
+		datas[i] = draw_component(child, (component_t*)row, child_context, deepness + 1);
 
 		unflexible_width += datas[i].dimensions.width;
 	}
@@ -208,13 +241,13 @@ draw_data_t draw_row(const row_t* row, const build_context_t context, uint64_t d
 		child_context.max_height = space.height;
 		child_context.backbuffer = backbuffers[i];
 
-		datas[i] = draw_component((component_t*)child, row, child_context, deepness + 1);
+		datas[i] = draw_component((component_t*)child, (component_t*)row, child_context, deepness + 1);
 	}
 
 	uint64_t advance = 0;
 
 	// render childs
-	buffer_t* main_buffer = &context.backbuffer;
+	const buffer_t* main_buffer = &context.backbuffer;
 	for(uint64_t i = 0; i < row->children_count; i++)
 	{
 		buffer_t* child_buffer = &backbuffers[i];
@@ -262,7 +295,7 @@ draw_data_t draw_expanded(const expanded_t* expanded, build_context_t context, u
 	child_context.min_height = child_context.max_height;
 	child_context.min_width = child_context.max_width;
 
-	draw_data_t data = draw_component(expanded->child, expanded, child_context, deepness + 1);
+	draw_data_t data = draw_component(expanded->child, (component_t*)expanded, child_context, deepness + 1);
 
 	if(data.childs == NULL)
 		data.childs = vector_create(widget_position_t);
@@ -288,7 +321,7 @@ draw_data_t draw_align(const align_t* align, const build_context_t context, uint
 	build_context_t child_context = context;
 	child_context.backbuffer = backbuffer;
 
-	draw_data_t child_data = draw_component(align->child, align, child_context, deepness + 1);
+	draw_data_t child_data = draw_component(align->child, (component_t*)align, child_context, deepness + 1);
 
 	float align_x = (align->alignment.x + 1) / 2;
 	float align_y = (align->alignment.y + 1) / 2;
@@ -299,7 +332,7 @@ draw_data_t draw_align(const align_t* align, const build_context_t context, uint
 	uint64_t xc = child_data.dimensions.width * align_x;
 	uint64_t yc = child_data.dimensions.height * align_y;
 
-	buffer_t* main_buffer = &context.backbuffer;
+	const buffer_t* main_buffer = &context.backbuffer;
 	uint64_t y_offset = yp - yc;
 	uint64_t x_offset = xp - xc;
 
@@ -334,7 +367,7 @@ draw_data_t draw_align(const align_t* align, const build_context_t context, uint
 
 draw_data_t draw_center(const center_t* center, const build_context_t context, uint64_t deepness)
 {
-	draw_data_t data = draw_component((component_t*)&(center->align), center, context, deepness + 1);
+	draw_data_t data = draw_component((component_t*)&(center->align), (component_t*)center, context, deepness + 1);
 
 	if(data.childs == NULL)
 		data.childs = vector_create(widget_position_t);
@@ -343,7 +376,7 @@ draw_data_t draw_center(const center_t* center, const build_context_t context, u
 		.dimensions = data.dimensions,
 		.coords = data.coords,
 		.z = deepness + 1,
-		.component = &(center->align)
+		.component = (component_t*)&(center->align)
 	};
 
 	vector_push_back(data.childs, child_pos);
@@ -359,7 +392,7 @@ draw_data_t draw_constrained_box(const constrained_box_t* constrained_box, const
 	child_context.max_height = context.max_height < constrained_box->constraints.max_height ? context.max_height : constrained_box->constraints.max_height;
 	child_context.max_width = context.max_width < constrained_box->constraints.max_width ? context.max_width : constrained_box->constraints.max_width;
 	
-	draw_data_t data = draw_component(constrained_box->child, constrained_box, child_context, deepness + 1);
+	draw_data_t data = draw_component(constrained_box->child, (component_t*)constrained_box, child_context, deepness + 1);
 
 	if(data.childs == NULL)
 		data.childs = vector_create(widget_position_t);
@@ -372,6 +405,37 @@ draw_data_t draw_constrained_box(const constrained_box_t* constrained_box, const
 	};
 
 	vector_push_back(data.childs, child_pos);
+
+	return data;
+}
+
+draw_data_t draw_listener(const listener_t* listener, const build_context_t context, uint64_t deepness)
+{
+	draw_data_t data = draw_component(listener->child, (component_t*)listener, context, deepness + 1);
+
+	if(data.childs == NULL)
+		data.childs = vector_create(widget_position_t);
+
+	widget_position_t child_pos = {
+		.dimensions = data.dimensions,
+		.coords = data.coords,
+		.z = deepness + 1,
+		.component = listener->child
+	};
+
+	vector_push_back(data.childs, child_pos);
+
+	return data;
+}
+
+draw_data_t draw_text(const text_t* text, const build_context_t context, uint64_t deepness)
+{
+	draw_data_t data = NULL_DRAW;
+
+	for(size_t i = 0; i < strlen(text->text); i++)
+	{
+		char c = text->text[i];
+	}
 
 	return data;
 }
