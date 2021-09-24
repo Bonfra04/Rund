@@ -15,7 +15,7 @@ static void event_handler(uint64_t wnd_id, uint8_t event_id)
     }
 }
 
-void create_window(const rund_app_t* app)
+void create_window(const rund_app_t* app, events_t handlers)
 {
     window = window_create(app->title, app->width, app->height, app->x, app->y, WND_NO_DECORATIONS);
 }
