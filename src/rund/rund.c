@@ -10,7 +10,6 @@ draw_data_t draw_container(const container_t* container, const build_context_t c
 draw_data_t draw_row(const row_t* row, const build_context_t context, uint64_t deepness);
 draw_data_t draw_expanded(const expanded_t* expanded, const build_context_t context, uint64_t deepness);
 draw_data_t draw_align(const align_t* align, const build_context_t context, uint64_t deepness);
-draw_data_t draw_center(const center_t* center, const build_context_t context, uint64_t deepness);
 draw_data_t draw_constrained_box(const constrained_box_t* constrained_box, const build_context_t context, uint64_t deepness);
 draw_data_t draw_listener(const listener_t* listener, const build_context_t context, uint64_t deepness);
 draw_data_t draw_text(const text_t* text, const build_context_t context, uint64_t deepness);
@@ -60,8 +59,8 @@ static void on_mouse_up(uint64_t x, uint64_t y, uint8_t button)
 	if(listener == NULL)
 		return;
 
-	if(listener->handlers.on_pointer_up)
-		listener->handlers.on_pointer_up();
+	if(listener->attributes.handlers->on_pointer_up)
+		listener->attributes.handlers->on_pointer_up((component_t*)listener);
 }
 
 static void on_mouse_down(uint64_t x, uint64_t y, uint8_t button)
@@ -70,8 +69,8 @@ static void on_mouse_down(uint64_t x, uint64_t y, uint8_t button)
 	if(listener == NULL)
 		return;
 
-	if(listener->handlers.on_pointer_down)
-		listener->handlers.on_pointer_down();
+	if(listener->attributes.handlers->on_pointer_down)
+		listener->attributes.handlers->on_pointer_down((component_t*)listener);
 }
 
 #include "ttf/ttf.h"
@@ -106,7 +105,7 @@ void run_app(const rund_app_t* app)
 			.component = app->root
 		};
 
-		widgets = data.childs;
+		widgets = data.childs ?: vector_create(widget_position_t);
 		vector_push_back(widgets, root_pos);
 
 		for(uint64_t y = 0; y < app->height; y++)
@@ -145,9 +144,6 @@ draw_data_t draw_component(const component_t* component, const component_t* pare
 		case ALIGN:
 			data = draw_align((const align_t*)component, context, deepness);
 			break;
-		case CENTER:
-			data = draw_center((const center_t*)component, context, deepness);
-			break;
 		case CONSTRAINED_BOX:
 			data = draw_constrained_box((const constrained_box_t*)component, context, deepness);
 			break;
@@ -169,19 +165,22 @@ draw_data_t draw_component(const component_t* component, const component_t* pare
 draw_data_t draw_container(const container_t* container, const build_context_t context, uint64_t deepness)
 {
 	draw_data_t data = NULL_DRAW;
-	data.dimensions.height = (container->height > context.max_height) ? context.max_height : (container->height < context.min_height) ? context.min_height : container->height;
-	data.dimensions.width = (container->width > context.max_width) ? context.max_width : (container->width < context.min_width) ? context.min_width : container->width;
+
+	const container_attributes_t* attributes = &(container->attributes);
+
+	data.dimensions.height = (*attributes->height > context.max_height) ? context.max_height : (*attributes->height < context.min_height) ? context.min_height : *attributes->height;
+	data.dimensions.width = (*attributes->width > context.max_width) ? context.max_width : (*attributes->width < context.min_width) ? context.min_width : *attributes->width;
 	data.coords.x = 0;
 	data.coords.y = 0;
 
 	for (uint64_t y = 0; y < data.dimensions.height; y++)
 		for (uint64_t x = 0; x < data.dimensions.width; x++)
-			context.backbuffer.data[y *context.backbuffer.width + x] = container->decoration.color;
+			context.backbuffer.data[y *context.backbuffer.width + x] = attributes->decoration->color;
 
 	build_context_t child_context = context;
-	child_context.max_width = container->width;
-	child_context.max_height = container->height;
-	draw_component(container->child, (component_t*)container, child_context, deepness);
+	child_context.max_width = *attributes->width;
+	child_context.max_height = *attributes->height;
+	draw_component(attributes->child, (component_t*)container, child_context, deepness);
 
 	return data;
 }
@@ -191,24 +190,26 @@ draw_data_t draw_row(const row_t* row, const build_context_t context, uint64_t d
 	draw_data_t data = { .coords = { 0, 0 }, .dimensions = { context.max_width, context.max_height } };
 	data.childs = vector_create(widget_position_t);
 
+	const row_attributes_t* attributes = &(row->attributes);
+
 	// decorations
 	for(uint64_t y = 0; y < context.max_height; y++)
 		for(uint64_t x = 0; x < context.max_width; x++)
-			context.backbuffer.data[y * context.backbuffer.width + x] = row->decoration.color;
+			context.backbuffer.data[y * context.backbuffer.width + x] = attributes->decoration->color;
 
-	buffer_t backbuffers[row->children_count];
-	draw_data_t datas[row->children_count];
+	buffer_t backbuffers[attributes->children->length];
+	draw_data_t datas[attributes->children->length];
 
 	uint64_t unflexible_width = 0;
 	uint64_t flexible_count = 0;
 
 	// draw unflexibles
-	for(uint64_t i = 0; i < row->children_count; i++)
+	for(uint64_t i = 0; i < attributes->children->length; i++)
 	{
-		component_t* child = row->children[i];
+		component_t* child = attributes->children->components[i];
 		if(child->isFlexible)
 		{
-			flexible_count += ((flexible_t*)child)->flex;
+			flexible_count += *((flexible_t*)child)->flex;
 			continue;
 		}
 
@@ -225,14 +226,14 @@ draw_data_t draw_row(const row_t* row, const build_context_t context, uint64_t d
 	uint64_t left_width = context.max_width - unflexible_width;
 
 	// draw flexibles
-	for(uint64_t i = 0; i < row->children_count; i++)
+	for(uint64_t i = 0; i < attributes->children->length; i++)
 	{
-		flexible_t* child = (flexible_t*)row->children[i];
+		flexible_t* child = (flexible_t*)attributes->children->components[i];
 		if(!child->isFlexible)
 			continue;
 
 		dimension_t space;
-		space.width = (uint64_t)(((double)left_width * (double)child->flex) / (double)flexible_count + 0.5);
+		space.width = (uint64_t)(((double)left_width * (double)*child->flex) / (double)flexible_count + 0.5);
 		space.height = context.max_height;
 		backbuffers[i] = buffer_create(space.width, space.height);
 
@@ -248,7 +249,7 @@ draw_data_t draw_row(const row_t* row, const build_context_t context, uint64_t d
 
 	// render childs
 	const buffer_t* main_buffer = &context.backbuffer;
-	for(uint64_t i = 0; i < row->children_count; i++)
+	for(uint64_t i = 0; i < attributes->children->length; i++)
 	{
 		buffer_t* child_buffer = &backbuffers[i];
 		uint64_t y_offset = datas[i].coords.y;
@@ -257,7 +258,7 @@ draw_data_t draw_row(const row_t* row, const build_context_t context, uint64_t d
 		widget_position_t position;
 		position.dimensions = datas[i].dimensions;
 		position.coords = (coord_t){ advance, y_offset };
-		position.component = row->children[i];
+		position.component = attributes->children->components[i];
 		position.z = deepness + 1;
 		vector_push_back(data.childs, position);
 
@@ -295,7 +296,9 @@ draw_data_t draw_expanded(const expanded_t* expanded, build_context_t context, u
 	child_context.min_height = child_context.max_height;
 	child_context.min_width = child_context.max_width;
 
-	draw_data_t data = draw_component(expanded->child, (component_t*)expanded, child_context, deepness + 1);
+	const expanded_attributes_t* attributes = &expanded->attributes;
+
+	draw_data_t data = draw_component(attributes->child, (component_t*)expanded, child_context, deepness + 1);
 
 	if(data.childs == NULL)
 		data.childs = vector_create(widget_position_t);
@@ -304,7 +307,7 @@ draw_data_t draw_expanded(const expanded_t* expanded, build_context_t context, u
 		.dimensions = data.dimensions,
 		.coords = data.coords,
 		.z = deepness + 1,
-		.component = expanded->child
+		.component = attributes->child
 	};
 
 	vector_push_back(data.childs, child_pos);
@@ -321,10 +324,12 @@ draw_data_t draw_align(const align_t* align, const build_context_t context, uint
 	build_context_t child_context = context;
 	child_context.backbuffer = backbuffer;
 
-	draw_data_t child_data = draw_component(align->child, (component_t*)align, child_context, deepness + 1);
+	const align_attributes_t* attributes = &(align->attributes);
 
-	float align_x = (align->alignment.x + 1) / 2;
-	float align_y = (align->alignment.y + 1) / 2;
+	draw_data_t child_data = draw_component(attributes->child, (component_t*)align, child_context, deepness + 1);
+
+	float align_x = (attributes->alignment->x + 1) / 2;
+	float align_y = (attributes->alignment->y + 1) / 2;
 
 	uint64_t xp = context.max_width * align_x;
 	uint64_t yp = context.max_height * align_y;
@@ -357,26 +362,7 @@ draw_data_t draw_align(const align_t* align, const build_context_t context, uint
 		.dimensions = data.dimensions,
 		.coords = data.coords,
 		.z = deepness + 1,
-		.component = align->child
-	};
-
-	vector_push_back(data.childs, child_pos);
-
-	return data;
-}
-
-draw_data_t draw_center(const center_t* center, const build_context_t context, uint64_t deepness)
-{
-	draw_data_t data = draw_component((component_t*)&(center->align), (component_t*)center, context, deepness + 1);
-
-	if(data.childs == NULL)
-		data.childs = vector_create(widget_position_t);
-
-	widget_position_t child_pos = {
-		.dimensions = data.dimensions,
-		.coords = data.coords,
-		.z = deepness + 1,
-		.component = (component_t*)&(center->align)
+		.component = attributes->child
 	};
 
 	vector_push_back(data.childs, child_pos);
@@ -387,12 +373,15 @@ draw_data_t draw_center(const center_t* center, const build_context_t context, u
 draw_data_t draw_constrained_box(const constrained_box_t* constrained_box, const build_context_t context, uint64_t deepness)
 {
 	build_context_t child_context = context;
-	child_context.min_height = context.min_height > constrained_box->constraints.min_height ? context.min_height : constrained_box->constraints.min_height;
-	child_context.min_width = context.min_width > constrained_box->constraints.min_width ? context.min_width : constrained_box->constraints.min_width;
-	child_context.max_height = context.max_height < constrained_box->constraints.max_height ? context.max_height : constrained_box->constraints.max_height;
-	child_context.max_width = context.max_width < constrained_box->constraints.max_width ? context.max_width : constrained_box->constraints.max_width;
+
+	const constrained_box_attributes_t* attributes = &(constrained_box->attributes);
+
+	child_context.min_height = context.min_height > attributes->constraints->min_height ? context.min_height : attributes->constraints->min_height;
+	child_context.min_width = context.min_width > attributes->constraints->min_width ? context.min_width : attributes->constraints->min_width;
+	child_context.max_height = context.max_height < attributes->constraints->max_height ? context.max_height : attributes->constraints->max_height;
+	child_context.max_width = context.max_width < attributes->constraints->max_width ? context.max_width : attributes->constraints->max_width;
 	
-	draw_data_t data = draw_component(constrained_box->child, (component_t*)constrained_box, child_context, deepness + 1);
+	draw_data_t data = draw_component(attributes->child, (component_t*)constrained_box, child_context, deepness + 1);
 
 	if(data.childs == NULL)
 		data.childs = vector_create(widget_position_t);
@@ -401,7 +390,7 @@ draw_data_t draw_constrained_box(const constrained_box_t* constrained_box, const
 		.dimensions = data.dimensions,
 		.coords = data.coords,
 		.z = deepness + 1,
-		.component = constrained_box->child
+		.component = attributes->child
 	};
 
 	vector_push_back(data.childs, child_pos);
@@ -411,7 +400,9 @@ draw_data_t draw_constrained_box(const constrained_box_t* constrained_box, const
 
 draw_data_t draw_listener(const listener_t* listener, const build_context_t context, uint64_t deepness)
 {
-	draw_data_t data = draw_component(listener->child, (component_t*)listener, context, deepness + 1);
+	const listener_attributes_t* attributes = &(listener->attributes);
+
+	draw_data_t data = draw_component(attributes->child, (component_t*)listener, context, deepness + 1);
 
 	if(data.childs == NULL)
 		data.childs = vector_create(widget_position_t);
@@ -420,7 +411,7 @@ draw_data_t draw_listener(const listener_t* listener, const build_context_t cont
 		.dimensions = data.dimensions,
 		.coords = data.coords,
 		.z = deepness + 1,
-		.component = listener->child
+		.component = attributes->child
 	};
 
 	vector_push_back(data.childs, child_pos);

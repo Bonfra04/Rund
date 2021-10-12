@@ -3,35 +3,34 @@
 #include "component.h"
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct alignment
 {
     float x, y;
 } alignment_t;
 
+#define Alignment(_x, _y) ((alignment_t){ .x = _x > 1.0f ? 1.0f : _x < -1.0f ? -1.0f : _x, .y = _y > 1.0f ? 1.0f : _y < -1.0f ? -1.0f : _y })
+
+typedef struct align_attributes
+{
+    char id[ID_LEN];
+    alignment_t* alignment;
+	component_t* child;
+} align_attributes_t;
+
 typedef struct align
 {
 	component_t base;
-    alignment_t alignment;
-	component_t* child;
+    align_attributes_t attributes;
 } __attribute__((packed)) align_t;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+align_t* align_create(align_attributes_t attributes);
 
-#define Alignment(_x, _y) ((alignment_t){ .x = _x, .y = _y })
-
-#define DEF_ALIGN Alignment(0.0f, 0.0f)
-
-align_t* align_create(component_t* child, alignment_t alignment);
+#define Align(...) ((component_t*)align_create((align_attributes_t){__VA_ARGS__}))
 
 #ifdef __cplusplus
 }
 #endif
-
-#include "../vrg.h"
-
-#define Align1(child) ((component_t*)align_create(child, DEF_ALIGN))
-#define Align2(child, alignment) ((component_t*)align_create(child, alignment))
-
-#define Align(...) vrg(Align, __VA_ARGS__)

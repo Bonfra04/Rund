@@ -1,12 +1,13 @@
 #include <rund.h>
+#include <rund/utils/allocation.h>
 
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
 
-void click()
+void click(component_t* self)
 {
-    printf("Hello there\n");
+    printf("%p\n", self);
 }
 
 int main()
@@ -16,28 +17,29 @@ int main()
         0, 0,
         1080 / 2, 720 / 2,
         Row(
-            list(
-                Container(NULL, 100, 100, ContainerDec{ .color = 0x00FF00 }),
+            .children = clone(&list(
                 Expanded(
-                    Container(NULL, ContainerDec{ .color = 0xFFFF00 }),
-                    Flex(2)
-                ),
-                Expanded(
-                    Container(NULL, ContainerDec{ .color = 0xFFFFFF }),
-                    Flex(1)
-                ),
-                Align(
-                    Container(NULL, 100, 100, ContainerDec{ .color = 0xFF006F }),
-                    Alignment(0.0f, 1.0f)
+                    .child = Container(
+                        .width = alloc_size(100),
+                        .height = alloc_size(100)
+                    ),
                 ),
                 Listener(
-                    ConstrainedBox(
-                        Container(NULL, 1, 1),
-                        BoxConstraints(10, 10, 30, 30)
+                    .child = Container(
+                        .width = alloc_size(100),
+                        .height = alloc_size(100),
+                        .decoration = clone(&ContainerDec(.color = 0xFFFF00), sizeof(container_decoration_t))
                     ),
-                    (Handlers{ .on_pointer_up = NULL, .on_pointer_down = click })
+                    .handlers = clone(&Handlers(.on_pointer_down = click), sizeof(handlers_t))
+                ),
+                Expanded(
+                    .child = Container(
+                        .width = alloc_size(100),
+                        .height = alloc_size(100),
+                        .decoration = clone(&ContainerDec(.color = 0xFFFFFF), sizeof(container_decoration_t))
+                    ),
                 )
-            )
+            ), sizeof(component_list_t))
         )
     };
 

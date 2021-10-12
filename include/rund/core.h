@@ -39,14 +39,5 @@ typedef struct draw_data
 
 #define NULL_DRAW ((draw_data_t){ .dimensions = { 0, 0 }, .coords = { 0, 0 }, .childs = NULL })
 
-typedef enum axis_alignment
-{
-	axis_start,
-	axis_end,
-	axis_center,
-} axis_alignment_t;
-
-#define list(...) ((component_t**)(component_t*[]){__VA_ARGS__}), vrg_argn(__VA_ARGS__)
-
 buffer_t buffer_create(size_t width, size_t height);
 void buffer_destroy(buffer_t* buffer);

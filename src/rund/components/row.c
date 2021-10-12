@@ -1,20 +1,23 @@
 #include <rund/components/row.h>
-#include <stdlib.h>
 #include "../log.h"
+#include <rund/utils/allocation.h>
 
-row_decoration_t def_dec_row = { .color = 0x000000 };
+#include <stdlib.h>
+#include <string.h>
 
-row_t* row_create(component_t** children, uint64_t children_count, row_decoration_t decoration)
+static const row_decoration_t def_dec_row = { .color = 0x000000 };
+
+row_t* row_create(row_attributes_t attributes)
 {
 	row_t* component = (row_t*)malloc(sizeof(row_t));
 
-	component->children = children;
-	component->decoration = decoration;
-	component->children_count = children_count;
-
-	TRACE("Component Created {ROW}", 0);
+	component->attributes.children = attributes.children;
+	component->attributes.decoration = attributes.decoration ?: clone(&def_dec_row, sizeof(row_decoration_t));
 
 	component->base.type = ROW;
 	component->base.isFlexible = false;
+	memcpy(component->base.id, attributes.id, ID_LEN);
+
+	TRACE("Component Created {ROW}", 0);
 	return component;
 }

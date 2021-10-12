@@ -1,20 +1,23 @@
 #include <rund/components/align.h>
-#include <stdlib.h>
 #include "../log.h"
+#include <rund/utils/allocation.h>
 
-align_t* align_create(component_t* child, alignment_t alignment)
+#include <stdlib.h>
+#include <string.h>
+
+static const alignment_t def_alignment = { .x = 0.0f, .y = 0.0f };
+
+align_t* align_create(align_attributes_t attributes)
 {
     align_t* component = (align_t*)malloc(sizeof(align_t));
 
-	alignment.x = alignment.x > 1.0f ? 1.0f : alignment.x < -1.0f ? -1.0f : alignment.x;
-	alignment.y = alignment.y > 1.0f ? 1.0f : alignment.y < -1.0f ? -1.0f : alignment.y;
-
-	component->child = child;
-    component->alignment = alignment;
-
-	TRACE("Component Created {Align}", 0);
+    component->attributes.child = attributes.child;
+    component->attributes.alignment = attributes.alignment ?: clone(&def_alignment, sizeof(alignment_t));
 
 	component->base.type = ALIGN;
     component->base.isFlexible = false;
+	memcpy(component->base.id, attributes.id, ID_LEN);
+
+    TRACE("Component Created {Align}", 0);
 	return component;
 }
