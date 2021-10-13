@@ -1,47 +1,57 @@
 #include <rund.h>
-#include <rund/utils/allocation.h>
-
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
 
 void click(component_t* self)
 {
-    printf("%p\n", self);
+    container_t* red = (container_t*)rund_get_component("Red");
+    red->attributes.decoration = ContainerDec(.color = 0xFF00FF);
 }
 
-int main()
+void rund_main()
 {
     rund_app_t app = {
         "Andrea",
         0, 0,
         1080 / 2, 720 / 2,
         Row(
-            .children = clone(&list(
+            .children = list(
                 Expanded(
                     .child = Container(
-                        .width = alloc_size(100),
-                        .height = alloc_size(100)
+                        .id = "Red",
+                        .width = Val(size_t, 100),
+                        .height = Val(size_t, 100)
+                    )
+                ),
+                ConstrainedBox(
+                    .child = Container(
+                        .width = Val(size_t, 10),
+                        .height = Val(size_t, 10)
                     ),
+                    .constraints = BoxConstraints(0, 0, 100, 100)
                 ),
                 Listener(
                     .child = Container(
-                        .width = alloc_size(100),
-                        .height = alloc_size(100),
-                        .decoration = clone(&ContainerDec(.color = 0xFFFF00), sizeof(container_decoration_t))
+                        .width = Val(size_t, 100),
+                        .height = Val(size_t, 100),
+                        .decoration = ContainerDec(.color = 0xFFFF00)
                     ),
-                    .handlers = clone(&Handlers(.on_pointer_down = click), sizeof(handlers_t))
-                ),
-                Expanded(
-                    .child = Container(
-                        .width = alloc_size(100),
-                        .height = alloc_size(100),
-                        .decoration = clone(&ContainerDec(.color = 0xFFFFFF), sizeof(container_decoration_t))
-                    ),
+                    .handlers = Handlers(.on_pointer_down = click)
                 )
-            ), sizeof(component_list_t))
+            )
         )
     };
 
     run_app(&app);
+}
+
+int main(int argc, char* argv[])
+{
+    gc_t gc;
+    gc_init(&gc, &argc);
+
+    rund_main();
+
+    gc_collect();
+    gc_dump();
+    gc_stop();
+    return 0;
 }

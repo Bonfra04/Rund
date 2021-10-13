@@ -120,6 +120,18 @@ void run_app(const rund_app_t* app)
 	TRACE("Rund app terminated\n", 0);
 }
 
+component_t* rund_get_component(char id[ID_LEN])
+{
+	size_t size = vector_size(widgets);
+	widget_position_t* vector = (widget_position_t*)widgets;
+	
+	for(size_t i = 0; i < size; i++)
+		if(strcmp(vector[i].component->id, id) == 0)
+			return vector[i].component;
+	
+	return NULL;
+}
+
 draw_data_t draw_component(const component_t* component, const component_t* parent, const build_context_t context, uint64_t deepness)
 {
 	draw_data_t data = NULL_DRAW;
