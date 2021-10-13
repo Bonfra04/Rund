@@ -5,6 +5,22 @@
 #include "log.h"
 #include <rund/utils/vector.h>
 
+extern int rund_main();
+
+int main(int argc, char* argv[])
+{
+    gc_t gc;
+    gc_init(&gc, &argc);
+
+    int ret_val = rund_main();
+
+    gc_collect();
+    gc_dump();
+    gc_stop();
+
+    return ret_val;
+}
+
 draw_data_t draw_component(const component_t* component, const component_t* parent, const build_context_t context, uint64_t deepness);
 draw_data_t draw_container(const container_t* container, const build_context_t context, uint64_t deepness);
 draw_data_t draw_row(const row_t* row, const build_context_t context, uint64_t deepness);
