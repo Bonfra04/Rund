@@ -1,9 +1,7 @@
-#include <rund/components/container.h>
+#include <rund.h>
 #include <rund/memory/gc.h>
-#include "../log.h"
-#include <rund/memory/allocation.h>
+#include <rund/log.h>
 
-#include <stdlib.h>
 #include <string.h>
 
 static const container_decoration_t def_dec_contaner = { .color = 0xFF0000 };

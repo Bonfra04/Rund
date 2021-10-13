@@ -1,10 +1,15 @@
 #pragma once
 
-#include "../core.h"
-#include <stdbool.h>
+#include <rund/memory/allocation.h>
 #include <rund/vrg.h>
 
+#include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
+
 #define ID_LEN 16
+
+typedef uint32_t color_t;
 
 typedef enum component_type
 {

@@ -1,7 +1,8 @@
-#include <rund/components/text.h>
+#include <rund.h>
 #include <rund/memory/gc.h>
-#include <stdlib.h>
-#include "../log.h"
+#include <rund/log.h>
+
+#include <string.h>
 
 text_t* text_create(const char* text)
 {

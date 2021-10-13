@@ -1,9 +1,7 @@
-#include <rund/components/align.h>
+#include <rund.h>
 #include <rund/memory/gc.h>
-#include "../log.h"
-#include <rund/memory/allocation.h>
+#include <rund/log.h>
 
-#include <stdlib.h>
 #include <string.h>
 
 static const alignment_t def_alignment = { .x = 0.0f, .y = 0.0f };

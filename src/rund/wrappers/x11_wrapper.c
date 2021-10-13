@@ -1,6 +1,6 @@
 #ifdef __linux__
 
-#include "../wrapper.h"
+#include <rund/wrapper.h>
 
 #include <X11/Xlib.h>
 #include <GL/glx.h>

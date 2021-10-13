@@ -1,9 +1,7 @@
-#include <rund/components/constrained_box.h>
+#include <rund.h>
 #include <rund/memory/gc.h>
-#include "../log.h"
-#include <rund/memory/allocation.h>
+#include <rund/log.h>
 
-#include <stdlib.h>
 #include <string.h>
 
 static const box_constraints_t default_constraints = {

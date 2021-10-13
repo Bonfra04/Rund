@@ -1,9 +1,10 @@
 #include <rund.h>
-#include "wrapper.h"
-#include <stdlib.h>
-#include <string.h>
-#include "log.h"
+#include <rund/core.h>
+#include <rund/wrapper.h>
 #include <rund/utils/vector.h>
+#include <rund/log.h>
+
+#include <string.h>
 
 extern int rund_main();
 

@@ -10,7 +10,7 @@
 #undef UNICODE
 #endif
 
-#include "../wrapper.h"
+#include <rund/wrapper.h>
 #include <stdio.h>
 
 static HWND window;

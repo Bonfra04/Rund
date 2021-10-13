@@ -1,7 +1,6 @@
 #pragma once
 
 #include "component.h"
-#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {

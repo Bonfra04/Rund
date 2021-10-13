@@ -1,7 +1,6 @@
 #include <rund/memory/allocation.h>
 #include <rund/memory/gc.h>
 
-#include <stdlib.h>
 #include <string.h>
 
 uint64_t* alloc_uint64_t(uint64_t value)

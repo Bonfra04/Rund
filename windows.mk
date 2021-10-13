@@ -7,7 +7,7 @@ DIR_OBJ	= $(DIR_ROOT)\bin-int
 C_FILES := $(shell get-childitem -s $$pwd\src\rund\*.c | select-object -expandproperty fullname | foreach { get-item $$_ | resolve-path -relative })
 OBJ_FILES = $(C_FILES:%.c=$(DIR_OBJ)\\%.o)
 
-CC_FLAGS = -g -O0 -c -I $(DIR_ROOT)\include -Wno-address-of-packed-member
+CC_FLAGS = -g -O0 -c -I $(DIR_ROOT)\include -I $(DIR_ROOT)\src -Wno-address-of-packed-member
 
 .PHONY: all lib clean
 

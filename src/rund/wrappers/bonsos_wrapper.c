@@ -1,6 +1,6 @@
 #ifdef BONSOS
 
-#include "../wrapper.h"
+#include <rund/wrapper.h>
 #include <gui.h>
 
 static window_t window;

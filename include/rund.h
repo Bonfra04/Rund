@@ -1,7 +1,6 @@
 #pragma once
 
 #include <rund/components.h>
-#include <rund/core.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,6 +16,9 @@ typedef struct rund_app
 
 void run_app(const rund_app_t* app);
 component_t* rund_get_component(char id[ID_LEN]);
+
+#define Ref(x) (*x)
+#define Val(type, x) (alloc_##type(x))
 
 #ifdef __cplusplus
 }

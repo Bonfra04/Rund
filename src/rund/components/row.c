@@ -1,9 +1,7 @@
-#include <rund/components/row.h>
+#include <rund.h>
 #include <rund/memory/gc.h>
-#include "../log.h"
-#include <rund/memory/allocation.h>
+#include <rund/log.h>
 
-#include <stdlib.h>
 #include <string.h>
 
 static const row_decoration_t def_dec_row = { .color = 0x000000 };

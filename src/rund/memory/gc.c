@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-gc_t* gc;
+static gc_t* gc;
 
 static size_t gc_suitable_size()
 {
