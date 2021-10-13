@@ -7,6 +7,9 @@
             "linux": {
                 "command": "make PLATFORM=LINUX"
             },
+            "windows": {
+                "command": "make PLATFORM=WINDOWS"
+            },
             "problemMatcher": [],
             "group": {
                 "kind": "build",

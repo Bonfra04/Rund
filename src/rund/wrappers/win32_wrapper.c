@@ -5,6 +5,7 @@
 #define UNICODE_WAS_UNDEFINED
 #endif
 #include <Windows.h>
+#include <windowsx.h>
 #ifdef UNICODE_WAS_UNDEFINED
 #undef UNICODE
 #endif
@@ -12,8 +13,11 @@
 #include "../wrapper.h"
 #include <stdio.h>
 
+static HWND window;
 static uint32_t* buffer;
 static size_t width, height;
+
+static events_t handlers;
 
 static LRESULT CALLBACK window_event(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -25,13 +29,22 @@ static LRESULT CALLBACK window_event(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
+	case WM_LBUTTONDOWN: case WM_RBUTTONDOWN: case WM_MBUTTONDOWN:
+		if(handlers.mouse_down)
+			handlers.mouse_down(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), (uMsg == WM_LBUTTONDOWN) ? 0 : (uMsg == WM_RBUTTONDOWN) ? 1 : 2);
+		break;
+	case WM_LBUTTONUP: case WM_RBUTTONUP: case WM_MBUTTONUP:
+		if(handlers.mouse_up)
+			handlers.mouse_up(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), (uMsg == WM_LBUTTONUP) ? 0 : (uMsg == WM_RBUTTONUP) ? 1 : 2);
+		break;
 	}
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
-static HWND window;
-void create_window(const rund_app_t* app)
+void create_window(const rund_app_t* app, events_t _handlers)
 {
+	handlers = _handlers;
+
 	buffer = (uint32_t*)malloc(app->width * app->height * sizeof(uint32_t));
 	memset((void*)buffer, 0x000000, app->width * app->height * sizeof(uint32_t));
 	width = app->width;
