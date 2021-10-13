@@ -3,7 +3,8 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <rund/utils/vector.h>
-#include <rund/vrg.h>
+#include <rund/memory/gc.h>
+#include <rund/memory/allocation.h>
 
 typedef uint32_t color_t;
 
@@ -41,3 +42,6 @@ typedef struct draw_data
 
 buffer_t buffer_create(size_t width, size_t height);
 void buffer_destroy(buffer_t* buffer);
+
+#define Ref(x) (*x)
+#define Val(type, x) (alloc_##type(x))

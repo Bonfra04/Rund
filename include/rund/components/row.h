@@ -12,8 +12,6 @@ typedef struct row_decoration
 	color_t color;
 } row_decoration_t;
 
-#define RowDec (row_decoration_t)
-
 typedef struct row_attributes
 {
 	char id[ID_LEN];

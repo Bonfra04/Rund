@@ -2,6 +2,7 @@
 
 #include "../core.h"
 #include <stdbool.h>
+#include <rund/vrg.h>
 
 #define ID_LEN 16
 
@@ -42,4 +43,4 @@ typedef struct component_list
 	size_t length;
 } component_list_t;
 
-#define list(...) ((component_list_t){((component_t**)(component_t*[]){__VA_ARGS__}), vrg_argn(__VA_ARGS__)})
+#define list(...) (clone(&(component_list_t){((component_t**)(component_t*[]){__VA_ARGS__}), vrg_argn(__VA_ARGS__)}, sizeof(component_list_t)))

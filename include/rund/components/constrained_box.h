@@ -14,7 +14,7 @@ typedef struct box_constraints
     uint64_t max_height;
 } box_constraints_t;
 
-#define BoxConstraints(_min_width, _min_height, _max_width, _max_height) ((box_constraints_t){ _min_width, _min_height, _max_width, _max_height })
+#define BoxConstraints(_min_width, _min_height, _max_width, _max_height) (clone(&(box_constraints_t){ _min_width, _min_height, _max_width, _max_height }, sizeof(box_constraints_t)))
 
 typedef struct constrained_box_attributes
 {

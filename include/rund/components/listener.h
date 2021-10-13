@@ -13,7 +13,7 @@ typedef struct handlers
     void (*on_pointer_down)(component_t* self);
 } handlers_t;
 
-#define Handlers(...) ((handlers_t){__VA_ARGS__})
+#define Handlers(...) ((handlers_t*)clone(&(handlers_t){__VA_ARGS__}, sizeof(handlers_t)))
 
 typedef struct listener_attributes
 {

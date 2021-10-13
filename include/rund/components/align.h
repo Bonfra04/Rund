@@ -12,7 +12,7 @@ typedef struct alignment
     float x, y;
 } alignment_t;
 
-#define Alignment(_x, _y) ((alignment_t){ .x = _x > 1.0f ? 1.0f : _x < -1.0f ? -1.0f : _x, .y = _y > 1.0f ? 1.0f : _y < -1.0f ? -1.0f : _y })
+#define Alignment(_x, _y) (clone(&(alignment_t){ .x = _x > 1.0f ? 1.0f : _x < -1.0f ? -1.0f : _x, .y = _y > 1.0f ? 1.0f : _y < -1.0f ? -1.0f : _y }, sizeof(alignment_t)))
 
 typedef struct align_attributes
 {

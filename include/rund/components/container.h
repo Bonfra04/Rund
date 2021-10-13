@@ -12,7 +12,7 @@ typedef struct container_decoration
 	color_t color;
 } container_decoration_t;
 
-#define ContainerDec(...) ((container_decoration_t){__VA_ARGS__})
+#define ContainerDec(...) ((container_decoration_t*)clone(&(container_decoration_t){__VA_ARGS__}, sizeof(container_decoration_t)))
 
 typedef struct container_attributes
 {
