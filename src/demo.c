@@ -14,29 +14,14 @@ int rund_main()
         1080 / 2, 720 / 2,
         Row(
             .children = list(
-                Expanded(
-                    .child = Container(
-                        .id = "Red",
-                        .width = Val(size_t, 100),
-                        .height = Val(size_t, 100)
-                    )
+                Expanded(.child = Container()),
+                Text(
+                    .text = "ga",
+                    .font_size = Val(size_t, 15)
                 ),
-                ConstrainedBox(
-                    .child = Container(
-                        .width = Val(size_t, 10),
-                        .height = Val(size_t, 10)
-                    ),
-                    .constraints = BoxConstraints(0, 0, 100, 100)
-                ),
-                Listener(
-                    .child = Container(
-                        .width = Val(size_t, 100),
-                        .height = Val(size_t, 100),
-                        .decoration = ContainerDec(.color = 0xFFFF00)
-                    ),
-                    .handlers = Handlers(.on_pointer_down = click)
-                )
-            )
+                Expanded(.child = Container())
+            ),
+            .decoration = clone(&(row_decoration_t){.color = 0xFFFF00}, sizeof(row_decoration_t))
         )
     };
 

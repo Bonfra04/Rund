@@ -4,15 +4,17 @@
 
 #include <string.h>
 
-text_t* text_create(const char* text)
+text_t* text_create(text_attributes_t attributes)
 {
     text_t* component = (text_t*)gc_alloc(sizeof(text_t));
-    
-	TRACE("Component Created {Text}", 0);
 
-	component->text = text;
+	component->attributes.text = attributes.text;
+    component->attributes.font_size = attributes.font_size ?: Val(size_t, 16);
 
-    component->base.type = TEXT;
+	component->base.type = TEXT;
 	component->base.isFlexible = false;
-    return component;
+	memcpy(component->base.id, attributes.id, ID_LEN);
+
+	TRACE("Component Created {TEXT}\t[%s]", 0, attributes.id);
+	return component;
 }
