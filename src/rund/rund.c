@@ -3,9 +3,9 @@
 #include <rund/wrapper.h>
 #include <rund/utils/vector.h>
 #include <rund/log.h>
+#include <rund/renderer.h>
 
 #include <string.h>
-#include <stdlib.h>
 
 extern int rund_main();
 
@@ -91,14 +91,9 @@ static void on_mouse_down(uint64_t x, uint64_t y, uint8_t button)
         listener->attributes.handlers->on_pointer_down((component_t*)listener);
 }
 
-#include "ttf/ttf.h"
-
-static ttf_t ttf;
-
 void run_app(const rund_app_t* app)
 {
-    ttf_load("Monaco.ttf", &ttf);
-
+    renderer_init();
     create_window(app, (events_t){ .mouse_down = on_mouse_down, .mouse_up = on_mouse_up });
 
     widgets = 0;
@@ -449,111 +444,6 @@ draw_data_t draw_listener(const listener_t* listener, const build_context_t cont
     return data;
 }
 
-void plot_pixel(const buffer_t* buffer, uint64_t x, uint64_t y, const color_t color)
-{
-    if(x >= 0 && x < buffer->width && y >= 0 && y < buffer->height)
-        buffer->data[y * buffer->width + x] = color;
-}
-
-void draw_line(uint64_t x1, uint64_t y1, uint64_t x2, uint64_t y2, color_t color, const buffer_t* buffer)
-{
-    int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
-    dx = x2 - x1; dy = y2 - y1;
-    dx1 = abs(dx);dy1 = abs(dy);
-    px = 2 * dy1 - dx1;	py = 2 * dx1 - dy1;
-    if (dy1 <= dx1)
-    {
-        if (dx >= 0)
-            { x = x1; y = y1; xe = x2; }
-        else
-            { x = x2; y = y2; xe = x1;}
-
-        plot_pixel(buffer, x, y, color);
-        
-        for (i = 0; x<xe; i++)
-        {
-            x = x + 1;
-            if (px<0)
-                px = px + 2 * dy1;
-            else
-            {
-                if ((dx<0 && dy<0) || (dx>0 && dy>0)) y = y + 1; else y = y - 1;
-                px = px + 2 * (dy1 - dx1);
-            }
-            plot_pixel(buffer, x, y, color);
-        }
-    }
-    else
-    {
-        if (dy >= 0)
-            { x = x1; y = y1; ye = y2; }
-        else
-            { x = x2; y = y2; ye = y1; }
-
-        plot_pixel(buffer, x, y, color);
-
-        for (i = 0; y<ye; i++)
-        {
-            y = y + 1;
-            if (py <= 0)
-                py = py + 2 * dx1;
-            else
-            {
-                if ((dx<0 && dy<0) || (dx>0 && dy>0)) x = x + 1; else x = x - 1;
-                py = py + 2 * (dx1 - dy1);
-            }
-            plot_pixel(buffer, x, y, color);
-        }
-    }
-}
-
-draw_data_t draw_character(const buffer_t* buffer, color_t color, char character, uint64_t transX, uint64_t transY, size_t scale)
-{
-    draw_data_t data = NULL_DRAW;
-    data.coords.x = transX;
-
-    uint64_t scaleX = buffer->width / scale;
-    uint64_t scaleY = buffer->height / scale;
-    scale = scaleX < scaleY ? scaleX : scaleY;
-
-    const uint16_t glyf_id = ttf.mapping[character];
-    const ttf_glyf_t* glyf = &ttf.glyfs[glyf_id];
-
-    uint64_t offX = glyf->header.xMin < 0 ? -glyf->header.xMin : 0;
-    uint64_t offY = glyf->header.yMin < 0 ? -glyf->header.yMin : 0;
-
-    transY += abs(abs(ttf.head.ymax) - abs(ttf.head.ymin));
-    transY += offY;
-    transY /= scale;
-    transY = buffer->height - transY;
-
-    uint64_t point = 0;
-    for(int c = 0; c < glyf->header.numberOfContours; c++)
-    {
-        uint64_t startX = (glyf->descriptor.xCoordinates[point] + offX) / scale;
-        uint64_t startY = (glyf->descriptor.yCoordinates[point] + offY) / scale;
-
-        uint64_t lastX = startX;
-        uint64_t lastY = startY;
-        for(int p = point + 1; p <= glyf->descriptor.endPtsOfContours[c]; p++)
-        {
-            uint64_t x = (glyf->descriptor.xCoordinates[p] + offX) / scale;
-            uint64_t y = (glyf->descriptor.yCoordinates[p] + offY) / scale;
-
-            draw_line(lastX + transX, buffer->height - (lastY + transY), x + transX, buffer->height - (y + transY), color, buffer);
-            lastX = x;
-            lastY = y;
-        }
-        draw_line(lastX + transX, buffer->height - (lastY + transY), startX + transX, buffer->height - (startY + transY), color, buffer);
-
-        point = glyf->descriptor.endPtsOfContours[c] + 1;
-    }
-
-    data.dimensions.width = ttf.metrics[glyf_id].advanceWidth / scale;
-    data.dimensions.height = (abs(ttf.head.ymax) + abs(ttf.head.ymin)) / scale;
-    return data;
-}
-
 draw_data_t draw_text(const text_t* text, const build_context_t context, uint64_t deepness)
 {
     draw_data_t data = { .childs = NULL, .dimensions = { 0, 0 }, .coords = { 0, 0 } };
@@ -564,7 +454,7 @@ draw_data_t draw_text(const text_t* text, const build_context_t context, uint64_
 
     for(int i = 0; i < strlen(attributes->text); i++)
     {
-        draw_data_t char_data = draw_character(&context.backbuffer, 0xFFFFFF, attributes->text[i], data.dimensions.width, 0, *attributes->font_size);
+        draw_data_t char_data = draw_character(&context.backbuffer, 0xFFFFFFFF, attributes->text[i], data.dimensions.width, 0, *attributes->font_size);
         
         size_t char_width = data.dimensions.width - char_data.coords.x + char_data.dimensions.width;
         data.dimensions.width += char_width;
