@@ -148,9 +148,9 @@ draw_data_t draw_character(const buffer_t* buffer, color_t color, char character
     draw_data_t data = NULL_DRAW;
     data.coords.x = transX;
 
-    uint64_t scaleX = buffer->width / scale;
-    uint64_t scaleY = buffer->height / scale;
-    scale = scaleX < scaleY ? scaleX : scaleY;
+    uint64_t scaleX = buffer->width / scale + (buffer->width % scale != 0);
+    uint64_t scaleY = buffer->height / scale + (buffer->height % scale != 0);
+    scale = scaleX > scaleY ? scaleX : scaleY;
 
     const uint16_t glyf_id = ttf.mapping[character];
     const ttf_glyf_t* glyf = &ttf.glyfs[glyf_id];
