@@ -29,29 +29,18 @@ int rund_main()
         "Andrea",
         0, 0,
         1080 / 2, 720 / 2,
-        Row(
-            .children = list(
-                Expanded(.child = Container()),
-                Listener(
-                    .id = "listener",
-                    .handlers = Handlers(
-                        .on_key_down = key_press,
-                        .on_pointer_down = click,
-                    ),
-                    .child = Text(
-                        .id = "text",
-                        .text = "a",
-                        .font_size = Val(size_t, 15)
-                    ),
+        Container(
+            .decoration = ContainerDec(.color = 0xFFFF0000),
+            .child = Align(
+                .child = Text(
+                    .id = "text",
+                    .text = "aq0:",
+                    .font_size = Val(size_t, 15)
                 ),
-                Expanded(
-                    .child = Container(
-                        .decoration = ContainerDec(.color = 0xFFFFFF00)
-                    )
-                )
-            ),
-            .decoration = clone(&(row_decoration_t){.color = 0xFFFF00FF}, sizeof(row_decoration_t))
+                .alignment = Alignment(0.0, 0.0)
+            )
         )
+        
     };
 
     run_app(&app);

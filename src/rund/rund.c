@@ -224,19 +224,51 @@ draw_data_t draw_container(const container_t* container, const build_context_t c
 
     const container_attributes_t* attributes = &(container->attributes);
 
-    data.dimensions.height = (*attributes->height > context.max_height) ? context.max_height : (*attributes->height < context.min_height) ? context.min_height : *attributes->height;
-    data.dimensions.width = (*attributes->width > context.max_width) ? context.max_width : (*attributes->width < context.min_width) ? context.min_width : *attributes->width;
-    data.coords.x = 0;
-    data.coords.y = 0;
+    size_t max_width = context.max_width;
+    size_t max_height = context.max_height;
+    if(attributes->width)
+        max_width = *attributes->width > context.max_width ? context.max_width : *attributes->width;
+    if(attributes->height)
+        max_height = *attributes->height > context.max_height ? context.max_height : *attributes->height;
 
-    for (uint64_t y = 0; y < data.dimensions.height; y++)
-        for (uint64_t x = 0; x < data.dimensions.width; x++)
-            context.backbuffer.data[y *context.backbuffer.width + x] = attributes->decoration->color;
 
-    build_context_t child_context = context;
-    child_context.max_width = *attributes->width;
-    child_context.max_height = *attributes->height;
-    draw_component(attributes->child, (component_t*)container, child_context, deepness);
+    build_context_t child_context = {
+        .max_width = max_width, .max_height = max_height,
+        .min_width = context.min_width, .min_height = context.min_height,
+        .backbuffer = buffer_create(max_width, max_height)
+    };
+
+    draw_data_t child_data = draw_component(attributes->child, (component_t*)container, child_context, deepness + 1);
+
+    data.dimensions = child_data.dimensions;
+    if(attributes->width)
+        data.dimensions.width = *attributes->width;
+    if(attributes->height)
+        data.dimensions.height = *attributes->height;
+
+    data.coords = child_data.coords;
+    data.childs = child_data.childs;
+
+    widget_position_t child_pos = {
+        .dimensions = child_data.dimensions,
+        .coords = child_data.coords,
+        .z = deepness,
+        .component = attributes->child
+    };
+    if(!data.childs)
+        data.childs = vector_create(widget_position_t);
+    vector_push_back(data.childs, child_pos);
+
+    for(size_t x = 0; x < child_data.dimensions.width; x++)
+        for(size_t y = 0; y < child_data.dimensions.height; y++)
+        {
+            color_t* child_pixel = &child_context.backbuffer.data[(child_data.coords.y + y) * child_context.backbuffer.width + (child_data.coords.x + x)];
+            color_t* parent_pixel = &context.backbuffer.data[(child_data.coords.y + y) * context.max_width + (child_data.coords.x + x)];
+            color_t color = blend(attributes->decoration->color, *child_pixel);
+            BLEND(*parent_pixel, color);
+        }
+
+    buffer_destroy(&child_context.backbuffer);
 
     return data;
 }
@@ -481,9 +513,11 @@ draw_data_t draw_text(const text_t* text, const build_context_t context, uint64_
 
     const text_attributes_t* attributes = &(text->attributes);
 
+    buffer_t chars_buffer = buffer_create(context.max_width, context.max_height);
+
     for(int i = 0; i < strlen(attributes->text); i++)
     {
-        draw_data_t char_data = draw_character(&context.backbuffer, 0xFFFFFFFF, attributes->text[i], data.dimensions.width, 0, *attributes->font_size);
+        draw_data_t char_data = draw_character(&chars_buffer, 0xFFFFFFFF, attributes->text[i], data.dimensions.width, 0, *attributes->font_size);
         
         size_t char_width = data.dimensions.width - char_data.coords.x + char_data.dimensions.width;
         data.dimensions.width += char_width;
@@ -491,6 +525,17 @@ draw_data_t draw_text(const text_t* text, const build_context_t context, uint64_
         size_t char_height = char_data.dimensions.height;
         data.dimensions.height = char_height > data.dimensions.height ? char_height : data.dimensions.height;
     }
+
+    for(size_t x = 0; x < chars_buffer.width; x++)
+        for(size_t y = 0; y < chars_buffer.height; y++)
+            BLEND(context.backbuffer.data[y * context.backbuffer.width + x], chars_buffer.data[y * chars_buffer.width + x]);
+
+    buffer_destroy(&chars_buffer);
+
+    if(data.coords.x + data.dimensions.width > context.max_width)
+        data.dimensions.width = context.max_width - data.coords.x;
+    if(data.coords.y + data.dimensions.height > context.max_height)
+        data.dimensions.height = context.max_height - data.coords.y;
 
     return data;
 }
