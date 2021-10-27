@@ -220,7 +220,7 @@ draw_data_t draw_row(const row_t* row, const build_context_t context, uint64_t d
     // decorations
     for(uint64_t y = 0; y < context.max_height; y++)
         for(uint64_t x = 0; x < context.max_width; x++)
-            context.backbuffer.data[y * context.backbuffer.width + x] = attributes->decoration->color;
+            BLEND(context.backbuffer.data[y * context.backbuffer.width + x], attributes->decoration->color);
 
     buffer_t backbuffers[attributes->children->length];
     draw_data_t datas[attributes->children->length];
@@ -304,7 +304,7 @@ draw_data_t draw_row(const row_t* row, const build_context_t context, uint64_t d
             {
                 color_t* main_pixel = &main_buffer->data[(y + y_offset) * main_buffer->width + (x + advance)]; 
                 color_t* child_pixel = &child_buffer->data[(y + y_offset) * child_buffer->width + (x + x_offset)];
-                *main_pixel = *child_pixel;
+                BLEND(*main_pixel, *child_pixel);
             }
 
         advance += datas[i].dimensions.width;
