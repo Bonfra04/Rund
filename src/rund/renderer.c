@@ -104,22 +104,43 @@ void draw_line(uint64_t x0, uint64_t y0, uint64_t x1, uint64_t y1, color_t color
     }
 }
 
-// void fillGlyphInside
-
-void boundaryFill4(const buffer_t* buffer, uint64_t x, uint64_t y, color_t boundaryColor, color_t fillColor)
+uint64_t bezier_coord(float t, float p0, float p1, float p2)
 {
-    if(x >= 0 && x < buffer->width && y >= 0 && y < buffer->height)
-    {
-        color_t color = buffer->data[y * buffer->width + x];
-        if(color != boundaryColor && color != fillColor)
-        {
-            plot_pixel(buffer, x, y, fillColor);
-            boundaryFill4(buffer, x + 1, y, boundaryColor, fillColor);
-            boundaryFill4(buffer, x - 1, y, boundaryColor, fillColor);
-            boundaryFill4(buffer, x, y + 1, boundaryColor, fillColor);
-            boundaryFill4(buffer, x, y - 1, boundaryColor, fillColor);
-        }
-    }
+    return (p0 - 2 * p1 + p2) * t * t + (2 * p1 - 2 * p0) * t + p0;
+}
+
+typedef struct point
+{
+    float x;
+    float y;
+} point_t;
+
+point_t bezier_point(point_t points[3], float t)
+{
+    return (point_t){
+        .x = bezier_coord(t, points[0].x, points[1].x, points[2].x),
+        .y = bezier_coord(t, points[0].y, points[1].y, points[2].y)
+    };
+}
+
+void bezier_curve(point_t cpoints[3], size_t num_points, point_t* result)
+{
+    float t = 1.0 / (num_points - 1);
+    for(size_t i = 0; i < num_points; i++)
+        result[i] = bezier_point(cpoints, i * t);
+}
+
+void process_bezier(point_t cpoints[3], color_t color, const buffer_t* buffer)
+{
+    #define BEZIER_POINTS 100
+
+    point_t points[BEZIER_POINTS];
+    bezier_curve(cpoints, BEZIER_POINTS, points);
+    
+    for(size_t i = 0; i < BEZIER_POINTS; i++)
+        plot_pixel(buffer, points[i].x, points[i].y, color);
+
+    #undef BEZIER_POINTS
 }
 
 draw_data_t draw_character(const buffer_t* buffer, color_t color, char character, uint64_t transX, uint64_t transY, size_t scale)
@@ -137,20 +158,24 @@ draw_data_t draw_character(const buffer_t* buffer, color_t color, char character
     uint64_t offX = glyf->header.xMin < 0 ? -glyf->header.xMin : 0;
     uint64_t offY = glyf->header.yMin < 0 ? -glyf->header.yMin : 0;
 
-    transY += abs(abs(ttf.head.ymax) - abs(ttf.head.ymin));
+    transY += abs(abs(ttf.head.ymax) + abs(ttf.head.ymin));
     transY += offY;
     transY /= scale;
     transY = buffer->height - transY;
 
-    buffer_t tmp_buffer = buffer_create(buffer->width, buffer->height);
-    memset(tmp_buffer.data, 0, tmp_buffer.width * tmp_buffer.height * sizeof(color_t));
+    uint8_t tmp_buffer[buffer->width * buffer->height];
+    memset(tmp_buffer, 0, buffer->width * buffer->height);
 
     uint64_t point = 0;
     for(int c = 0; c < glyf->header.numberOfContours; c++)
     {
+        buffer_t contour_buffer = buffer_create(buffer->width, buffer->height);
+        memset(contour_buffer.data, 0, contour_buffer.width * contour_buffer.height * sizeof(color_t));
+
         size_t num_points = glyf->descriptor.endPtsOfContours[c] + 1 - point;
         uint64_t xPoints[num_points];
         uint64_t yPoints[num_points];
+        bool onCurve[num_points];
 
         for(size_t p = 0; p < num_points; p++)
         {
@@ -159,45 +184,56 @@ draw_data_t draw_character(const buffer_t* buffer, color_t color, char character
 
             xPoints[p] = x + transX;
             yPoints[p] = buffer->height - (y + transY);
-        }
 
-        for(size_t i = 0; i < num_points - 1; i++)
-            draw_line(xPoints[i], yPoints[i], xPoints[i + 1], yPoints[i + 1], color, &tmp_buffer);
-        draw_line(xPoints[0], yPoints[0], xPoints[num_points - 1], yPoints[num_points - 1], color, &tmp_buffer);
+            onCurve[p] = glyf->descriptor.onCurve[p + point];
+        }
 
         point = glyf->descriptor.endPtsOfContours[c] + 1;
-    }
 
-    for(uint64_t y = 0; y < buffer->height; y++)
-    {
-        bool state = false;
-        for(uint64_t x = 0; x < buffer->width; x++)
+        uint64_t first = 0;
+        while(!onCurve[first])
+            first++;
+        point_t last_oncurve = {.x = xPoints[first], .y = yPoints[first]};
+        uint64_t used = 0;
+        for(size_t i = first + 1; i < num_points + first; i++)
         {
-            if(tmp_buffer.data[y * buffer->width + x] & 0xFF000000)
+            point_t point = {.x = xPoints[i], .y = yPoints[i]};
+
+            if(onCurve[i % num_points])
             {
-                while(x < buffer->width && (tmp_buffer.data[y * buffer->width + x] & 0xFF000000))
-                    x++;
-                state = !state;
-                if(state)
-                {
-                    uint64_t tmp_x = x;
-                    while(tmp_x < buffer->width && !(tmp_buffer.data[y * buffer->width + tmp_x] & 0xFF000000))
-                        tmp_x++;
-                    if(tmp_x == buffer->width)
-                        break;
-                }
+                draw_line(last_oncurve.x, last_oncurve.y, point.x, point.y, color, &contour_buffer);
+                last_oncurve = point;
+                continue;
             }
-            tmp_buffer.data[y * buffer->width + x] = state ? color : 0;
+
+            point_t cpoints[3] = {
+                {.x = last_oncurve.x, .y = last_oncurve.y},
+                {.x = point.x, .y = point.y},
+                {.x = xPoints[(i + 1) % num_points], .y = yPoints[(i + 1) % num_points]}
+            };
+            if(!onCurve[(i + 1) % num_points]) {
+                cpoints[2].x = cpoints[1].x + (cpoints[2].x - cpoints[1].x) / 2;
+                cpoints[2].y = cpoints[1].y + (cpoints[2].y - cpoints[1].y) / 2;
+            }
+            last_oncurve = cpoints[2];
+            process_bezier(cpoints, color, &contour_buffer);
         }
+        draw_line(last_oncurve.x, last_oncurve.y, xPoints[first], yPoints[first], color, &contour_buffer);
+
+        for(uint64_t y = 0; y < buffer->height; y++)
+            for(uint64_t x = 0; x < buffer->width; x++)
+                if(contour_buffer.data[y * buffer->width + x] & 0xFF000000)
+                    tmp_buffer[y * buffer->width + x] += 1;
+
+        buffer_destroy(&contour_buffer);
     }
 
     for(size_t i = 0; i < buffer->width * buffer->height; i++)
-        if(tmp_buffer.data[i] & 0xFF000000)
-            buffer->data[i] = tmp_buffer.data[i]; //todo alpha blending
+        if(tmp_buffer[i] % 2 == 1)
+            buffer->data[i] = color; //todo alpha blending
 
-    buffer_destroy(&tmp_buffer);
 
     data.dimensions.width = ttf.metrics[glyf_id].advanceWidth / scale;
-    data.dimensions.height = (abs(ttf.head.ymax) + abs(ttf.head.ymin)) / scale;
+    data.dimensions.height = (abs(ttf.head.ymax) + abs(ttf.head.ymin) + offY) / scale + 1;
     return data;
 }

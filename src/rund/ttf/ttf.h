@@ -122,6 +122,7 @@ typedef struct ttf_glyf_descriptor
     uint8_t* flags;
     int16_t* xCoordinates;
     int16_t* yCoordinates;
+    bool* onCurve;
 } __attribute__ ((packed)) ttf_glyf_descriptor_t;
 
 typedef struct ttf_glyf

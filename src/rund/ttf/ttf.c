@@ -285,6 +285,7 @@ static void read_glyf(FILE* file, ttf_t* ttf)
 
         descriptor->xCoordinates = malloc(sizeof(int16_t) * num_points);
         descriptor->yCoordinates = malloc(sizeof(int16_t) * num_points);
+        descriptor->onCurve = malloc(sizeof(bool) * num_points);
 
         uint8_t* coords = malloc(sizeof(uint8_t) * (num_points << 2));
         fread(coords, sizeof(uint8_t), num_points << 2, file);
@@ -292,6 +293,10 @@ static void read_glyf(FILE* file, ttf_t* ttf)
         uint32_t pointindex = 0;
         int16_t last_point = 0;
         
+        // flags pass
+        for(size_t j = 0; j < num_points; j++)
+            descriptor->onCurve[j] = descriptor->flags[j] & TTF_ON_CURVE;
+
         // xpass
         for (size_t j = 0; j < num_points; j++)
         {
@@ -381,6 +386,7 @@ static void read_hhea(FILE* file, ttf_t* ttf)
     ttf->hhea.caretOffset = TTF_ENDIAN_WORD(ttf->hhea.caretOffset);
     ttf->hhea.metricDataFormat = TTF_ENDIAN_WORD(ttf->hhea.metricDataFormat);
     ttf->hhea.numberOfLongHorMetrics = TTF_ENDIAN_WORD(ttf->hhea.numberOfLongHorMetrics);
+
 }
 
 static void read_hmtx(FILE* file, ttf_t* ttf)
@@ -419,7 +425,8 @@ static void read_cmap(FILE* file, ttf_t* ttf)
         header.platformSpecificID = TTF_ENDIAN_WORD(header.platformSpecificID);
         header.offset = TTF_ENDIAN_DWORD(header.offset);
 
-        if(header.platformID == TTF_PLATFORM_UNICODE && header.platformSpecificID == TTF_UNICODE_2_0_BMP_ONLY)
+        if(header.platformID == TTF_PLATFORM_UNICODE && header.platformSpecificID == TTF_UNICODE_2_0_BMP_ONLY ||
+            header.platformID == TTF_PLATFORM_MICROSOFT && header.platformSpecificID == 1)
         {
             // preserve file offset
             long advance = ftell(file);
@@ -451,11 +458,15 @@ static void read_cmap(FILE* file, ttf_t* ttf)
             uint16_t idRangeOffset[cmap4_header.segCountX2 / 2];
             uint16_t padding;
 
+            size_t glyfIdxLen = cmap4_header.length - sizeof(cmap4_header) - sizeof(padding) - (cmap4_header.segCountX2 / 2) * sizeof(uint16_t) * 4;
+            uint16_t glyphIndexArray[glyfIdxLen];
+
             fread(endCode, sizeof(uint16_t), cmap4_header.segCountX2 / 2, file);
             fread(&padding, sizeof(uint16_t), 1, file);
             fread(startCode, sizeof(uint16_t), cmap4_header.segCountX2 / 2, file);
             fread(idDelta, sizeof(uint16_t), cmap4_header.segCountX2 / 2, file);
             fread(idRangeOffset, sizeof(uint16_t), cmap4_header.segCountX2 / 2, file);
+            fread(glyphIndexArray, sizeof(uint16_t), glyfIdxLen, file);
 
             for(int j = 0; j < cmap4_header.segCountX2 / 2; j++)
             {
@@ -464,6 +475,8 @@ static void read_cmap(FILE* file, ttf_t* ttf)
                 idDelta[j] = TTF_ENDIAN_WORD(idDelta[j]);
                 idRangeOffset[j] = TTF_ENDIAN_WORD(idRangeOffset[j]);
             }
+            for(int j = 0; j < glyfIdxLen; j++)
+                glyphIndexArray[j] = TTF_ENDIAN_WORD(glyphIndexArray[j]);
 
             // map individual characters
             for(int c = 0; c < UINT16_MAX; c++)
@@ -481,11 +494,8 @@ static void read_cmap(FILE* file, ttf_t* ttf)
 
                 if(idRangeOffset[idx] == 0)
                     ttf->mapping[c] = c + idDelta[idx];
-                // else
-                // {
-                //     int offset = idRangeOffset[idx] / 2 + (c - startCode[idx]);
-                //     ttf->mapping[c] = startCode[idx] + idDelta[idx] + idRangeOffset[idx] / 2 + (c - startCode[idx]);
-                // }
+                else
+                    ttf->mapping[c] = glyphIndexArray[idx - cmap4_header.segCountX2 / 2 + idRangeOffset[idx] / 2 + (c - startCode[idx])];
             }
 
             return;

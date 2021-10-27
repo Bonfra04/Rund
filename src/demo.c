@@ -1,11 +1,5 @@
 #include <rund.h>
 
-static void click(component_t* self)
-{
-    container_t* red = (container_t*)rund_get_component("Red");
-    red->attributes.decoration = ContainerDec(.color = 0xFF00FF);
-}
-
 int rund_main()
 {
     rund_app_t app = {
@@ -16,12 +10,16 @@ int rund_main()
         //     .children = list(
         //         Expanded(.child = Container()),
                 Text(
-                    .text = "HV",
-                    .font_size = Val(size_t, 50)
+                    .text = "beziercurves!96",
+                    .font_size = Val(size_t, 20)
                 ),
-        //         Expanded(.child = Container())
+        //         Expanded(
+        //             .child = Container(
+        //                 .decoration = ContainerDec(.color = 0xFFFFFF00)
+        //             )
+        //         )
         //     ),
-        //     .decoration = clone(&(row_decoration_t){.color = 0xFFFF00}, sizeof(row_decoration_t))
+        //     .decoration = clone(&(row_decoration_t){.color = 0xFFFF00FF}, sizeof(row_decoration_t))
         // )
     };
 
