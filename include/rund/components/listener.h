@@ -10,6 +10,8 @@ typedef struct handlers
 {
     void (*on_pointer_up)(component_t* self);
     void (*on_pointer_down)(component_t* self);
+    void (*on_key_up)(component_t* self, uint16_t keycode);
+    void (*on_key_down)(component_t* self, uint16_t keycode);
 } handlers_t;
 
 #define Handlers(...) ((handlers_t*)clone(&(handlers_t){__VA_ARGS__}, sizeof(handlers_t)))

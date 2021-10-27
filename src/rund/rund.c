@@ -42,6 +42,7 @@ typedef struct widget_position
 
 static vector_t widgets;
 static uint64_t deepness;
+static listener_t* focus_node;
 
 static listener_t* get_listener(uint64_t x, uint64_t y)
 {
@@ -91,12 +92,34 @@ static void on_mouse_down(uint64_t x, uint64_t y, uint8_t button)
         listener->attributes.handlers->on_pointer_down((component_t*)listener);
 }
 
+static void on_key_down(uint16_t key)
+{
+    if(focus_node == NULL)
+        return;
+
+    if(focus_node->attributes.handlers->on_key_down)
+        focus_node->attributes.handlers->on_key_down((component_t*)focus_node, key);
+}
+
+static void on_key_up(uint16_t key)
+{
+    if(focus_node == NULL)
+        return;
+
+    if(focus_node->attributes.handlers->on_key_up)
+        focus_node->attributes.handlers->on_key_up((component_t*)focus_node, key);
+}
+
 void run_app(const rund_app_t* app)
 {
-    renderer_init();
-    create_window(app, (events_t){ .mouse_down = on_mouse_down, .mouse_up = on_mouse_up });
-
     widgets = 0;
+    focus_node = 0;
+
+    renderer_init();
+    create_window(app, (events_t){
+        .mouse_down = on_mouse_down, .mouse_up = on_mouse_up,
+        .key_down = on_key_down, .key_up = on_key_up
+    });
 
     do
     {
@@ -143,6 +166,14 @@ component_t* rund_get_component(char id[ID_LEN])
             return vector[i].component;
     
     return NULL;
+}
+
+void acquire_focus(listener_t* listener)
+{
+    if(listener == NULL)
+        return;
+
+    focus_node = listener;
 }
 
 draw_data_t draw_component(const component_t* component, const component_t* parent, const build_context_t context, uint64_t deepness)
@@ -248,7 +279,7 @@ draw_data_t draw_row(const row_t* row, const build_context_t context, uint64_t d
         unflexible_width += datas[i].dimensions.width;
     }
 
-    uint64_t left_width = context.max_width - unflexible_width;
+    uint64_t left_width = context.max_width > unflexible_width ? context.max_width - unflexible_width : 0;
 
     // draw flexibles
     for(uint64_t i = 0; i < attributes->children->length; i++)

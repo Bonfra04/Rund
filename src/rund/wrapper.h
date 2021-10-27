@@ -9,6 +9,8 @@ extern "C" {
 typedef struct events {
     void (*mouse_down)(uint64_t x, uint64_t y, uint8_t button);
     void (*mouse_up)(uint64_t x, uint64_t y, uint8_t button);
+    void (*key_down)(uint16_t key);
+    void (*key_up)(uint16_t key);
 } events_t;
 
 void create_window(const rund_app_t* app, events_t handlers);
