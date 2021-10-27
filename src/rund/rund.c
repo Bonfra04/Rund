@@ -481,8 +481,6 @@ draw_data_t draw_text(const text_t* text, const build_context_t context, uint64_
 
     const text_attributes_t* attributes = &(text->attributes);
 
-    memset(context.backbuffer.data, 0, context.backbuffer.width * context.backbuffer.height * sizeof(color_t));
-
     for(int i = 0; i < strlen(attributes->text); i++)
     {
         draw_data_t char_data = draw_character(&context.backbuffer, 0xFFFFFFFF, attributes->text[i], data.dimensions.width, 0, *attributes->font_size);

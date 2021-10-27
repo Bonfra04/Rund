@@ -170,7 +170,6 @@ draw_data_t draw_character(const buffer_t* buffer, color_t color, char character
     for(int c = 0; c < glyf->header.numberOfContours; c++)
     {
         buffer_t contour_buffer = buffer_create(buffer->width, buffer->height);
-        memset(contour_buffer.data, 0, contour_buffer.width * contour_buffer.height * sizeof(color_t));
 
         size_t num_points = glyf->descriptor.endPtsOfContours[c] + 1 - point;
         uint64_t xPoints[num_points];
@@ -230,7 +229,7 @@ draw_data_t draw_character(const buffer_t* buffer, color_t color, char character
 
     for(size_t i = 0; i < buffer->width * buffer->height; i++)
         if(tmp_buffer[i] % 2 == 1)
-            buffer->data[i] = color; //todo alpha blending
+            BLEND(buffer->data[i], color);
 
     data.dimensions.width = ttf.metrics[glyf_id].advanceWidth / scale;
     data.dimensions.height = (abs(ttf.head.ymax) + abs(ttf.head.ymin) + offY) / scale + 1;

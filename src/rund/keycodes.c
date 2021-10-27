@@ -1,4 +1,5 @@
 #include <rund/keycodes.h>
+#include <string.h>
 
 uint8_t keycode_to_ascii(uint8_t keycode, uint8_t *ascii)
 {

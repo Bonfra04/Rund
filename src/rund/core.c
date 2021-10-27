@@ -7,7 +7,7 @@ buffer_t buffer_create(size_t width, size_t height)
     buffer_t buffer;
     buffer.width = width;
     buffer.height = height;
-    buffer.data = malloc(width * height * sizeof(color_t));
+    buffer.data = calloc(width * height * sizeof(color_t), 1);
 
     return buffer;
 }
