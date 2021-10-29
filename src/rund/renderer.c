@@ -148,9 +148,7 @@ draw_data_t draw_character(const buffer_t* buffer, color_t color, wchar_t charac
     draw_data_t data = NULL_DRAW;
     data.coords.x = transX;
 
-#define mandufra_number 0.00001
-    scale = (float)buffer->height * scale * mandufra_number; // idk why but this works
-#undef mandufra_number
+    scale *= 0.001; // scaling factor
 
     const uint16_t glyf_id = ttf.mapping[character];
     const ttf_glyf_t* glyf = &ttf.glyfs[glyf_id];
