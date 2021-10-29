@@ -4,6 +4,7 @@
 #include <rund/keycodes.h>
 
 #include <X11/Xlib.h>
+#include <X11/XKBlib.h>
 #include <GL/glx.h>
 
 static Display* display;
@@ -105,7 +106,7 @@ void flush()
 
 static uint16_t translate_keycode(uint32_t x11_keycode)
 {
-    KeySym keysym = XKeycodeToKeysym(display, x11_keycode, 0);
+    KeySym keysym = XkbKeycodeToKeysym(display, x11_keycode, 0, 0);
     switch (keysym)
     {
     case XK_A: return RK_A;
