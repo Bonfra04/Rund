@@ -9,8 +9,8 @@ extern "C" {
 typedef struct text_attributes
 {
 	char id[ID_LEN];
-	const char* text;
-    size_t* font_size;
+	const wchar_t* text;
+    float* font_size;
 } text_attributes_t;
 
 typedef struct text

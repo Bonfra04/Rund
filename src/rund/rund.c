@@ -6,6 +6,7 @@
 #include <rund/renderer.h>
 
 #include <string.h>
+#include <wchar.h>
 
 extern int rund_main();
 
@@ -26,6 +27,7 @@ int main(int argc, char* argv[])
 draw_data_t draw_component(const component_t* component, const component_t* parent, const build_context_t context, uint64_t deepness);
 draw_data_t draw_container(const container_t* container, const build_context_t context, uint64_t deepness);
 draw_data_t draw_row(const row_t* row, const build_context_t context, uint64_t deepness);
+draw_data_t draw_column(const column_t* column, const build_context_t context, uint64_t deepness);
 draw_data_t draw_expanded(const expanded_t* expanded, const build_context_t context, uint64_t deepness);
 draw_data_t draw_align(const align_t* align, const build_context_t context, uint64_t deepness);
 draw_data_t draw_constrained_box(const constrained_box_t* constrained_box, const build_context_t context, uint64_t deepness);
@@ -110,15 +112,26 @@ static void on_key_up(uint16_t key)
         focus_node->attributes.handlers->on_key_up((component_t*)focus_node, key);
 }
 
-void run_app(const rund_app_t* app)
+static rund_app_t* app;
+
+static void on_resize(uint64_t width, uint64_t height)
 {
+    app->width = width;
+    app->height = height;
+}
+
+void run_app(rund_app_t* rund_app)
+{
+    app = rund_app;
+
     widgets = 0;
     focus_node = 0;
 
     renderer_init();
     create_window(app, (events_t){
         .mouse_down = on_mouse_down, .mouse_up = on_mouse_up,
-        .key_down = on_key_down, .key_up = on_key_up
+        .key_down = on_key_down, .key_up = on_key_up,
+        .resize = on_resize
     });
 
     do
@@ -194,6 +207,9 @@ draw_data_t draw_component(const component_t* component, const component_t* pare
         case ROW:
             data = draw_row((const row_t*)component, context, deepness);
             break;
+        case COLUMN:
+            data = draw_column((const column_t*)component, context, deepness);
+            break;
         case EXPANDED:
             data = draw_expanded((const expanded_t*)component, context, deepness);
             break;
@@ -231,44 +247,62 @@ draw_data_t draw_container(const container_t* container, const build_context_t c
     if(attributes->height)
         max_height = *attributes->height > context.max_height ? context.max_height : *attributes->height;
 
+    if(attributes->child)
+    {
+        build_context_t child_context = {
+            .max_width = max_width, .max_height = max_height,
+            .min_width = context.min_width, .min_height = context.min_height,
+            .backbuffer = buffer_create(max_width, max_height)
+        };
 
-    build_context_t child_context = {
-        .max_width = max_width, .max_height = max_height,
-        .min_width = context.min_width, .min_height = context.min_height,
-        .backbuffer = buffer_create(max_width, max_height)
-    };
+        draw_data_t child_data = draw_component(attributes->child, (component_t*)container, child_context, deepness + 1);
 
-    draw_data_t child_data = draw_component(attributes->child, (component_t*)container, child_context, deepness + 1);
+        data.dimensions = child_data.dimensions;
+        if(attributes->width)
+            data.dimensions.width = *attributes->width;
+        if(attributes->height)
+            data.dimensions.height = *attributes->height;
 
-    data.dimensions = child_data.dimensions;
-    if(attributes->width)
-        data.dimensions.width = *attributes->width;
-    if(attributes->height)
-        data.dimensions.height = *attributes->height;
+        data.coords = child_data.coords;
+        data.childs = child_data.childs;
 
-    data.coords = child_data.coords;
-    data.childs = child_data.childs;
+        widget_position_t child_pos = {
+            .dimensions = child_data.dimensions,
+            .coords = child_data.coords,
+            .z = deepness,
+            .component = attributes->child
+        };
+        if(!data.childs)
+            data.childs = vector_create(widget_position_t);
+        vector_push_back(data.childs, child_pos);
 
-    widget_position_t child_pos = {
-        .dimensions = child_data.dimensions,
-        .coords = child_data.coords,
-        .z = deepness,
-        .component = attributes->child
-    };
-    if(!data.childs)
-        data.childs = vector_create(widget_position_t);
-    vector_push_back(data.childs, child_pos);
+        for(size_t x = 0; x < child_data.dimensions.width; x++)
+            for(size_t y = 0; y < child_data.dimensions.height; y++)
+            {
+                color_t* child_pixel = &child_context.backbuffer.data[(child_data.coords.y + y) * child_context.backbuffer.width + (child_data.coords.x + x)];
+                color_t* parent_pixel = &context.backbuffer.data[(child_data.coords.y + y) * context.max_width + (child_data.coords.x + x)];
+                color_t color = blend(attributes->decoration->color, *child_pixel);
+                BLEND(*parent_pixel, color);
+            }
 
-    for(size_t x = 0; x < child_data.dimensions.width; x++)
-        for(size_t y = 0; y < child_data.dimensions.height; y++)
-        {
-            color_t* child_pixel = &child_context.backbuffer.data[(child_data.coords.y + y) * child_context.backbuffer.width + (child_data.coords.x + x)];
-            color_t* parent_pixel = &context.backbuffer.data[(child_data.coords.y + y) * context.max_width + (child_data.coords.x + x)];
-            color_t color = blend(attributes->decoration->color, *child_pixel);
-            BLEND(*parent_pixel, color);
-        }
+        buffer_destroy(&child_context.backbuffer);
+    }
+    else
+    {
+        data.dimensions.height = max_height;
+        data.dimensions.width = max_width;
+        data.coords.x = 0;
+        data.coords.y = 0;
 
-    buffer_destroy(&child_context.backbuffer);
+        for (uint64_t y = 0; y < data.dimensions.height; y++)
+            for (uint64_t x = 0; x < data.dimensions.width; x++)
+                context.backbuffer.data[y *context.backbuffer.width + x] = attributes->decoration->color;
+
+        build_context_t child_context = context;
+        child_context.max_width = attributes->width ? *attributes->width : max_width;
+        child_context.max_height = attributes->height ? *attributes->height : max_height;
+        draw_component(attributes->child, (component_t*)container, child_context, deepness);
+    }
 
     return data;
 }
@@ -371,6 +405,111 @@ draw_data_t draw_row(const row_t* row, const build_context_t context, uint64_t d
             }
 
         advance += datas[i].dimensions.width;
+    
+        buffer_destroy(child_buffer);
+    }
+
+    return data;
+}
+
+draw_data_t draw_column(const column_t* column, const build_context_t context, uint64_t deepness)
+{
+    draw_data_t data = { .coords = { 0, 0 }, .dimensions = { context.max_width, context.max_height } };
+    data.childs = vector_create(widget_position_t);
+
+    const column_attributes_t* attributes = &(column->attributes);
+
+    // decorations
+    for(uint64_t y = 0; y < context.max_height; y++)
+        for(uint64_t x = 0; x < context.max_width; x++)
+            BLEND(context.backbuffer.data[y * context.backbuffer.width + x], attributes->decoration->color);
+
+    buffer_t backbuffers[attributes->children->length];
+    draw_data_t datas[attributes->children->length];
+
+    uint64_t unflexible_height = 0;
+    uint64_t flexible_count = 0;
+
+    // draw unflexibles
+    for(uint64_t i = 0; i < attributes->children->length; i++)
+    {
+        component_t* child = attributes->children->components[i];
+        if(child->isFlexible)
+        {
+            flexible_count += *((flexible_t*)child)->flex;
+            continue;
+        }
+
+        build_context_t child_context = context;
+        child_context.max_height -= unflexible_height;
+        backbuffers[i] = buffer_create(child_context.max_width, child_context.max_height);
+        child_context.backbuffer = backbuffers[i];
+
+        datas[i] = draw_component(child, (component_t*)column, child_context, deepness + 1);
+
+        unflexible_height += datas[i].dimensions.height;
+    }
+
+    uint64_t left_height = context.max_height > unflexible_height ? context.max_height - unflexible_height : 0;
+
+    // draw flexibles
+    for(uint64_t i = 0; i < attributes->children->length; i++)
+    {
+        flexible_t* child = (flexible_t*)attributes->children->components[i];
+        if(!child->isFlexible)
+            continue;
+
+        dimension_t space;
+        space.height = (uint64_t)(((double)left_height * (double)*child->flex) / (double)flexible_count + 0.5);
+        space.width = context.max_width;
+        backbuffers[i] = buffer_create(space.width, space.height);
+
+        build_context_t child_context = context;
+        child_context.max_width = space.width;
+        child_context.max_height = space.height;
+        child_context.backbuffer = backbuffers[i];
+
+        datas[i] = draw_component((component_t*)child, (component_t*)column, child_context, deepness + 1);
+    }
+
+    uint64_t advance = 0;
+
+    // render childs
+    const buffer_t* main_buffer = &context.backbuffer;
+    for(uint64_t i = 0; i < attributes->children->length; i++)
+    {
+        buffer_t* child_buffer = &backbuffers[i];
+        uint64_t y_offset = datas[i].coords.y;
+        uint64_t x_offset = datas[i].coords.x;
+
+        widget_position_t position;
+        position.dimensions = datas[i].dimensions;
+        position.coords = (coord_t){ x_offset, advance };
+        position.component = attributes->children->components[i];
+        position.z = deepness + 1;
+        vector_push_back(data.childs, position);
+
+        if(datas[i].childs)
+        {
+            for(size_t c = 0; c < vector_size(datas[i].childs); c++)
+            {
+                widget_position_t child_position = ((widget_position_t*)datas[i].childs)[c];
+                child_position.coords.x = x_offset;
+                child_position.coords.y += advance - y_offset;
+                vector_push_back(data.childs, child_position);
+            }
+            vector_destroy(datas[i].childs);
+        }
+
+        for (uint64_t y = 0; y < datas[i].dimensions.height; y++)
+            for (uint64_t x = 0; x < datas[i].dimensions.width; x++)
+            {
+                color_t* main_pixel = &main_buffer->data[(y + advance) * main_buffer->width + (x + x_offset)]; 
+                color_t* child_pixel = &child_buffer->data[(y + y_offset) * child_buffer->width + (x + x_offset)];
+                BLEND(*main_pixel, *child_pixel);
+            }
+
+        advance += datas[i].dimensions.height;
     
         buffer_destroy(child_buffer);
     }
@@ -515,7 +654,7 @@ draw_data_t draw_text(const text_t* text, const build_context_t context, uint64_
 
     buffer_t chars_buffer = buffer_create(context.max_width, context.max_height);
 
-    for(int i = 0; i < strlen(attributes->text); i++)
+    for(int i = 0; i < wcslen(attributes->text); i++)
     {
         draw_data_t char_data = draw_character(&chars_buffer, 0xFFFFFFFF, attributes->text[i], data.dimensions.width, 0, *attributes->font_size);
         

@@ -9,7 +9,7 @@ text_t* text_create(text_attributes_t attributes)
     text_t* component = (text_t*)gc_alloc(sizeof(text_t));
 
 	component->attributes.text = attributes.text;
-    component->attributes.font_size = attributes.font_size ?: Val(size_t, 16);
+    component->attributes.font_size = attributes.font_size ?: Val(float, 0.1);
 
 	component->base.type = TEXT;
 	component->base.isFlexible = false;

@@ -15,7 +15,7 @@ typedef struct rund_app
 	component_t* root;
 } rund_app_t;
 
-void run_app(const rund_app_t* app);
+void run_app(rund_app_t* app);
 component_t* rund_get_component(char id[ID_LEN]);
 void acquire_focus(listener_t* listener);
 

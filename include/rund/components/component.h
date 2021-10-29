@@ -16,6 +16,7 @@ typedef enum component_type
 	EMPTY = 0,
 	CONTAINER,
 	ROW,
+	COLUMN,
 	EXPANDED,
 	ALIGN,
 	CONSTRAINED_BOX,

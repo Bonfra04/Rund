@@ -76,6 +76,11 @@ bool event_loop()
                     handlers.key_up(translate_keycode(event.xkey.keycode));
                 break;
 
+            case ConfigureNotify:
+                if(handlers.resize)
+                    handlers.resize(event.xconfigure.width, event.xconfigure.height);
+                break;
+
             default:
                 break;
         }

@@ -143,24 +143,24 @@ void process_bezier(point_t cpoints[3], color_t color, const buffer_t* buffer)
     #undef BEZIER_POINTS
 }
 
-draw_data_t draw_character(const buffer_t* buffer, color_t color, char character, uint64_t transX, uint64_t transY, size_t scale)
+draw_data_t draw_character(const buffer_t* buffer, color_t color, wchar_t character, uint64_t transX, uint64_t transY, float scale)
 {
     draw_data_t data = NULL_DRAW;
     data.coords.x = transX;
 
-    uint64_t scaleX = buffer->width / scale + (buffer->width % scale != 0);
-    uint64_t scaleY = buffer->height / scale + (buffer->height % scale != 0);
-    scale = scaleX > scaleY ? scaleX : scaleY;
+#define manduca_number 0.0003855
+    scale = (float)buffer->height * scale * manduca_number; // idk why but this works
+#undef manduca_number
 
     const uint16_t glyf_id = ttf.mapping[character];
     const ttf_glyf_t* glyf = &ttf.glyfs[glyf_id];
-
+ 
     uint64_t offX = glyf->header.xMin < 0 ? -glyf->header.xMin : 0;
     uint64_t offY = glyf->header.yMin < 0 ? -glyf->header.yMin : 0;
 
-    transY += abs(abs(ttf.head.ymax) + abs(ttf.head.ymin));
-    transY += offY;
-    transY /= scale;
+    transY += abs(ttf.head.ymax) + abs(ttf.head.ymin);
+    transY += offY; 
+    transY *= scale;
     transY = buffer->height - transY;
 
     uint8_t tmp_buffer[buffer->width * buffer->height];
@@ -178,8 +178,8 @@ draw_data_t draw_character(const buffer_t* buffer, color_t color, char character
 
         for(size_t p = 0; p < num_points; p++)
         {
-            uint64_t x = (glyf->descriptor.xCoordinates[p + point] + offX) / scale;
-            uint64_t y = (glyf->descriptor.yCoordinates[p + point] + offY) / scale;
+            uint64_t x = (glyf->descriptor.xCoordinates[p + point] + offX) * scale;
+            uint64_t y = (glyf->descriptor.yCoordinates[p + point] + offY) * scale;
 
             xPoints[p] = x + transX;
             yPoints[p] = buffer->height - (y + transY);
@@ -231,8 +231,8 @@ draw_data_t draw_character(const buffer_t* buffer, color_t color, char character
         if(tmp_buffer[i] % 2 == 1)
             BLEND(buffer->data[i], color);
 
-    data.dimensions.width = ttf.metrics[glyf_id].advanceWidth / scale;
-    data.dimensions.height = (abs(ttf.head.ymax) + abs(ttf.head.ymin) + offY) / scale + 1;
+    data.dimensions.width = ttf.metrics[glyf_id].advanceWidth * scale;
+    data.dimensions.height = (abs(ttf.head.ymax) + abs(ttf.head.ymin) + offY) * scale + 1;
     return data;
 }
 

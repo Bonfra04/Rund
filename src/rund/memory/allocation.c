@@ -3,6 +3,13 @@
 
 #include <string.h>
 
+float* alloc_float(float value)
+{
+    float* ptr = (float*)gc_alloc(sizeof(float));
+    *ptr = value;
+    return ptr;
+}
+
 uint64_t* alloc_uint64_t(uint64_t value)
 {
     uint64_t* ptr = gc_alloc(sizeof(uint64_t));
