@@ -247,6 +247,13 @@ draw_data_t draw_container(const container_t* container, const build_context_t c
     if(attributes->height)
         max_height = *attributes->height > context.max_height ? context.max_height : *attributes->height;
 
+    data.dimensions.height = max_height;
+    data.dimensions.width = max_width;
+
+    for (uint64_t y = 0; y < data.dimensions.height; y++)
+        for (uint64_t x = 0; x < data.dimensions.width; x++)
+            BLEND(context.backbuffer.data[y *context.backbuffer.width + x], attributes->decoration->color);
+
     if(attributes->child)
     {
         build_context_t child_context = {
@@ -257,14 +264,15 @@ draw_data_t draw_container(const container_t* container, const build_context_t c
 
         draw_data_t child_data = draw_component(attributes->child, (component_t*)container, child_context, deepness + 1);
 
-        data.dimensions = child_data.dimensions;
-        if(attributes->width)
-            data.dimensions.width = *attributes->width;
-        if(attributes->height)
-            data.dimensions.height = *attributes->height;
-
-        data.coords = child_data.coords;
         data.childs = child_data.childs;
+
+        child_data.dimensions.width = child_data.dimensions.width > max_width ? max_width : child_data.dimensions.width;
+        child_data.dimensions.height = child_data.dimensions.height > max_height ? max_height : child_data.dimensions.height;
+
+        if(!attributes->width)
+            data.dimensions.width = child_data.dimensions.width;
+        if(!attributes->height)
+            data.dimensions.height = child_data.dimensions.height;
 
         widget_position_t child_pos = {
             .dimensions = child_data.dimensions,
@@ -281,27 +289,10 @@ draw_data_t draw_container(const container_t* container, const build_context_t c
             {
                 color_t* child_pixel = &child_context.backbuffer.data[(child_data.coords.y + y) * child_context.backbuffer.width + (child_data.coords.x + x)];
                 color_t* parent_pixel = &context.backbuffer.data[(child_data.coords.y + y) * context.max_width + (child_data.coords.x + x)];
-                color_t color = blend(attributes->decoration->color, *child_pixel);
-                BLEND(*parent_pixel, color);
+                BLEND(*parent_pixel, *child_pixel);
             }
 
         buffer_destroy(&child_context.backbuffer);
-    }
-    else
-    {
-        data.dimensions.height = max_height;
-        data.dimensions.width = max_width;
-        data.coords.x = 0;
-        data.coords.y = 0;
-
-        for (uint64_t y = 0; y < data.dimensions.height; y++)
-            for (uint64_t x = 0; x < data.dimensions.width; x++)
-                context.backbuffer.data[y *context.backbuffer.width + x] = attributes->decoration->color;
-
-        build_context_t child_context = context;
-        child_context.max_width = attributes->width ? *attributes->width : max_width;
-        child_context.max_height = attributes->height ? *attributes->height : max_height;
-        draw_component(attributes->child, (component_t*)container, child_context, deepness);
     }
 
     return data;
