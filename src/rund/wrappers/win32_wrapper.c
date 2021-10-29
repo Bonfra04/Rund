@@ -19,6 +19,8 @@ static size_t width, height;
 
 static events_t handlers;
 
+static uint16_t translate_keycode(uint64_t win32_keycode);
+
 static LRESULT CALLBACK window_event(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
@@ -36,6 +38,14 @@ static LRESULT CALLBACK window_event(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 	case WM_LBUTTONUP: case WM_RBUTTONUP: case WM_MBUTTONUP:
 		if(handlers.mouse_up)
 			handlers.mouse_up(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), (uMsg == WM_LBUTTONUP) ? 0 : (uMsg == WM_RBUTTONUP) ? 1 : 2);
+		break;
+	case WM_KEYDOWN:
+		if(handlers.key_down)
+			handlers.key_down(translate_keycode(wParam));
+		break;
+	case WM_KEYUP:
+		if(handlers.key_up)
+			handlers.key_up(translate_keycode(wParam));
 		break;
 	}
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -114,6 +124,55 @@ void flush()
 	bitmap_info.bmiHeader.biCompression = BI_RGB;
 
 	StretchDIBits(hdc, 0, 0, width, height, 0, 0, width, height, buffer, &bitmap_info, DIB_RGB_COLORS, SRCCOPY);
+}
+
+static uint16_t translate_keycode(uint64_t win32_keycode)
+{
+	switch (win32_keycode)
+	{
+	case 0x41: return !GetKeyState(VK_SHIFT) ? RK_A : RK_a;
+	case 0x42: return !GetKeyState(VK_SHIFT) ? RK_B : RK_b;
+	case 0x43: return !GetKeyState(VK_SHIFT) ? RK_C : RK_c;
+	case 0x44: return !GetKeyState(VK_SHIFT) ? RK_D : RK_d;
+	case 0x45: return !GetKeyState(VK_SHIFT) ? RK_E : RK_e;
+	case 0x46: return !GetKeyState(VK_SHIFT) ? RK_F : RK_f;
+	case 0x47: return !GetKeyState(VK_SHIFT) ? RK_G : RK_g;
+	case 0x48: return !GetKeyState(VK_SHIFT) ? RK_H : RK_h;
+	case 0x49: return !GetKeyState(VK_SHIFT) ? RK_I : RK_i;
+	case 0x4A: return !GetKeyState(VK_SHIFT) ? RK_J : RK_j;
+	case 0x4B: return !GetKeyState(VK_SHIFT) ? RK_K : RK_k;
+	case 0x4C: return !GetKeyState(VK_SHIFT) ? RK_L : RK_l;
+	case 0x4D: return !GetKeyState(VK_SHIFT) ? RK_M : RK_m;
+	case 0x4E: return !GetKeyState(VK_SHIFT) ? RK_N : RK_n;
+	case 0x4F: return !GetKeyState(VK_SHIFT) ? RK_O : RK_o;
+	case 0x50: return !GetKeyState(VK_SHIFT) ? RK_P : RK_p;
+	case 0x51: return !GetKeyState(VK_SHIFT) ? RK_Q : RK_q;
+	case 0x52: return !GetKeyState(VK_SHIFT) ? RK_R : RK_r;
+	case 0x53: return !GetKeyState(VK_SHIFT) ? RK_S : RK_s;
+	case 0x54: return !GetKeyState(VK_SHIFT) ? RK_T : RK_t;
+	case 0x55: return !GetKeyState(VK_SHIFT) ? RK_U : RK_u;
+	case 0x56: return !GetKeyState(VK_SHIFT) ? RK_V : RK_v;
+	case 0x57: return !GetKeyState(VK_SHIFT) ? RK_W : RK_w;
+	case 0x58: return !GetKeyState(VK_SHIFT) ? RK_X : RK_x;
+	case 0x59: return !GetKeyState(VK_SHIFT) ? RK_Y : RK_y;
+	case 0x5A: return !GetKeyState(VK_SHIFT) ? RK_Z : RK_z;
+
+	case 0x30: return RK_0;
+	case 0x31: return RK_1;
+	case 0x32: return RK_2;
+	case 0x33: return RK_3;
+	case 0x34: return RK_4;
+	case 0x35: return RK_5;
+	case 0x36: return RK_6;
+	case 0x37: return RK_7;
+	case 0x38: return RK_8;
+	case 0x39: return RK_9;
+
+	case VK_SPACE: return RK_space;
+	}
+
+    fprintf(stderr, "Unmapped keycode: %d\n", win32_keycode);
+    exit(-1);
 }
 
 #endif

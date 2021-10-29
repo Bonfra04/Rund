@@ -5,7 +5,12 @@
             "name": "Debug Rund",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/demo.elf",
+            "linux": {
+                "program": "${workspaceFolder}/bin/demo.elf",
+            },
+            "windows": {
+                "program": "${workspaceFolder}/bin/demo.exe",
+            },
             "cwd": "${workspaceFolder}",
             "MIMode": "gdb",
             "preLaunchTask": "make"
