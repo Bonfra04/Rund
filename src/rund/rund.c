@@ -288,7 +288,7 @@ draw_data_t draw_container(const container_t* container, const build_context_t c
             for(size_t y = 0; y < child_data.dimensions.height; y++)
             {
                 color_t* child_pixel = &child_context.backbuffer.data[(child_data.coords.y + y) * child_context.backbuffer.width + (child_data.coords.x + x)];
-                color_t* parent_pixel = &context.backbuffer.data[(child_data.coords.y + y) * context.max_width + (child_data.coords.x + x)];
+                color_t* parent_pixel = &context.backbuffer.data[y * context.max_width + x];
                 BLEND(*parent_pixel, *child_pixel);
             }
 
