@@ -19,9 +19,6 @@ void run_app(rund_app_t* app);
 component_t* rund_get_component(char id[ID_LEN]);
 void acquire_focus(listener_t* listener);
 
-#define Ref(x) (*x)
-#define Val(type, x) (alloc_##type(x))
-
 #ifdef __cplusplus
 }
 #endif

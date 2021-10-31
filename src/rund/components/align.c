@@ -14,7 +14,6 @@ align_t* align_create(align_attributes_t attributes)
     component->attributes.alignment = attributes.alignment ?: Alignment(0.0f, 0.0f);
 
 	component->base.type = ALIGN;
-    component->base.isFlexible = false;
 	memcpy(component->base.id, attributes.id, ID_LEN);
 
     TRACE("Component Created {Align}\t[%s]", 0, attributes.id);

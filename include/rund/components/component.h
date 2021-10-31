@@ -15,9 +15,8 @@ typedef enum component_type
 {
 	EMPTY = 0,
 	CONTAINER,
-	ROW,
-	COLUMN,
-	EXPANDED,
+	LAYOUT,
+	FLEXIBLE,
 	ALIGN,
 	CONSTRAINED_BOX,
 	LISTENER,
@@ -31,17 +30,7 @@ typedef struct component
 	component_type_t type;
 	component_t* parent;
 	char id[ID_LEN];
-	bool isFlexible;
 } __attribute__((packed)) component_t;
-
-typedef struct flexible
-{
-	component_type_t type;
-	component_t* parent;
-	char id[ID_LEN];
-	bool isFlexible;
-	uint64_t* flex;
-} __attribute__((packed)) flexible_t;
 
 typedef struct component_list
 {

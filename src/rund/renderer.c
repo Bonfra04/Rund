@@ -229,8 +229,8 @@ draw_data_t draw_character(const buffer_t* buffer, color_t color, wchar_t charac
         if(tmp_buffer[i] % 2 == 1)
             BLEND(buffer->data[i], color);
 
-    data.dimensions.width = ttf.metrics[glyf_id].advanceWidth * scale;
-    data.dimensions.height = (abs(ttf.head.ymax) + abs(ttf.head.ymin) + offY) * scale + 1;
+    data.dims.width = ttf.metrics[glyf_id].advanceWidth * scale;
+    data.dims.height = (abs(ttf.head.ymax) + abs(ttf.head.ymin) + offY) * scale + 1;
     return data;
 }
 

@@ -18,7 +18,6 @@ listener_t* listener_create(listener_attributes_t attributes)
     );
 
     component->base.type = LISTENER;
-    component->base.isFlexible = false;
     memcpy(component->base.id, attributes.id, ID_LEN);
 
     TRACE("Component Created {Listener}\t[%s]", 0, attributes.id);

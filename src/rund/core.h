@@ -32,12 +32,12 @@ typedef struct build_context
 
 typedef struct draw_data
 {
-	dimension_t dimensions;
+	dimension_t dims;
 	coord_t coords;
 	vector_t childs;
 } draw_data_t;
 
-#define NULL_DRAW ((draw_data_t){ .dimensions = { 0, 0 }, .coords = { 0, 0 }, .childs = NULL })
+#define NULL_DRAW ((draw_data_t){ .dims = { 0, 0 }, .coords = { 0, 0 }, .childs = NULL })
 
 buffer_t buffer_create(size_t width, size_t height);
 void buffer_destroy(buffer_t* buffer);

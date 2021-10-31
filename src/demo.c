@@ -3,7 +3,12 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
+void click(component_t* self)
+{
+    printf("%s\n", self->id);
+}
 
 int rund_main()
 {
@@ -11,30 +16,33 @@ int rund_main()
         "Andrea",
         0, 0,
         500, 500,
-        Row(
+        Layout(
+            .laying_style = Val(Stack),
             .children = list(
-                Text(
-                    .text = L"Ciao",
-                    .font_size = Val(float, 14),
-                ),
-                Container(
-                    .decoration = ContainerDec(.color = 0xFFFF0000),
-                    .width = Val(size_t, 100),
-                    .height = Val(size_t, 100),
-                    .child =
-                    Align(
-                        .child = Text(
-                            .text = L"Container",
-                            .font_size = Val(float, 8),
+                Listener(
+                    .id = "rosso",
+                    .child = Align(
+                        .alignment = Alignment(0, 0),
+                        .child = Container(
+                            .child = Flexible(
+                                .child = Container(
+                                    .decoration = ContainerDec(.color = 0xFFFF0000),
+                                    .width = Val((size_t)100),
+                                    .height = Val((size_t)100),
+                                )
+                            ),
+                            .width = Val((size_t)200),
+                            .height = Val((size_t)200),
                         ),
-                        .alignment = Alignment(1.0, 1.0)
-                    )
+                    ),
+                    .handlers = Handlers(.on_pointer_down = click)
                 ),
-                Text(.text = L"EH"),
-                Expanded(
-                    .child = Container(
-                        .decoration = ContainerDec(.color = 0xFF00FF00),
-                    )
+                Listener(
+                    .id = "testo",
+                    .child = Align(
+                        .child = Text(.text = L"AAAQ")
+                    ),
+                    .handlers = Handlers(.on_pointer_down = click)
                 )
             )
         )

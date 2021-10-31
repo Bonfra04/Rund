@@ -1,11 +1,8 @@
 #pragma once
 
 #include <stddef.h>
-#include <stdint.h>
 
-float* alloc_float(float value);
-int* alloc_int(int value);
-uint64_t* alloc_uint64_t(uint64_t value);
-size_t* alloc_size_t(size_t value);
 void* clone(const void* ptr, size_t size);
+
+#define Val(x) ({ typeof(x) __x = (x); clone(&__x, sizeof(__x)); })
 

@@ -19,7 +19,6 @@ constrained_box_t* constrained_box_create(constrained_box_attributes_t attribute
 	component->attributes.constraints = attributes.constraints ?: clone(&default_constraints, sizeof(box_constraints_t));
 
 	component->base.type = CONSTRAINED_BOX;
-    component->base.isFlexible = false;
 	memcpy(component->base.id, attributes.id, ID_LEN);
 
     TRACE("Component Created {ConstrainedBox}\t[%s]", 0, attributes.id);
