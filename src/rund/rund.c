@@ -159,7 +159,7 @@ void run_app(rund_app_t* rund_app)
 
         for(uint64_t y = 0; y < data.dims.height; y++)
             for(uint64_t x = 0; x < data.dims.width; x++)
-                put_pixel(x + data.coords.x, y + data.coords.y, context.backbuffer.data[y * app->width + x]);
+                put_pixel(x + data.coords.x, y + data.coords.y, context.backbuffer.data[(y + data.coords.y) * app->width + (x + data.coords.x)]);
 
         buffer_destroy(&context.backbuffer);
 
@@ -340,8 +340,8 @@ draw_data_t draw_layout(const layout_t* layout, const build_context_t context, u
         datas[i] = draw_component(child, (component_t*)layout, child_context, deepness + (num_childs - i));
     }
 
-    coord_t top_left = { .x = 0, .y = 0 };
-    coord_t bottom_right = { .x = context.max_width, .y = context.max_height };
+    coord_t top_left = { .x = context.max_width, .y = context.max_height };
+    coord_t bottom_right = { .x = 0, .y = 0 };
 
     // render childs
     size_t ongoing_deepness = 0;
@@ -445,8 +445,8 @@ draw_data_t draw_align(const align_t* align, const build_context_t context, uint
     const align_attributes_t* attributes = &(align->attributes);
 
     build_context_t child_context = {
-        .max_height = context.max_height, .min_height = context.max_height,
-        .max_width = context.max_width, .min_width = context.max_width,
+        .max_height = context.max_height, .min_height = context.min_height,
+        .max_width = context.max_width, .min_width = context.min_width,
         .backbuffer = buffer_create(context.max_width, context.max_height)
     };
 
@@ -470,7 +470,7 @@ draw_data_t draw_align(const align_t* align, const build_context_t context, uint
 
     widget_position_t child_pos = {
         .dimensions = child_data.dims,
-        .coords = data.coords,
+        .coords = child_data.coords,
         .z = deepness,
         .component = attributes->child
     };
@@ -521,19 +521,22 @@ draw_data_t draw_constrained_box(const constrained_box_t* constrained_box, const
 
 draw_data_t draw_listener(const listener_t* listener, const build_context_t context, uint64_t deepness)
 {
+    draw_data_t data = NULL_DRAW;
+
     const listener_attributes_t* attributes = &(listener->attributes);
 
-    draw_data_t data = draw_component(attributes->child, (component_t*)listener, context, deepness + 1);
+    draw_data_t child_data = draw_component(attributes->child, (component_t*)listener, context, deepness + 1);
 
     widget_position_t child_pos = {
-        .dimensions = data.dims,
-        .coords = data.coords,
+        .dimensions = child_data.dims,
+        .coords = {0, 0},
         .z = deepness,
         .component = attributes->child
     };
 
-    if(data.childs == NULL)
-        data.childs = vector_create(widget_position_t);
+    data.dims = child_data.dims;
+    data.coords = child_data.coords;
+    data.childs = child_data.childs ?: vector_create(widget_position_t);
     vector_push_back(data.childs, child_pos);
 
     return data;
