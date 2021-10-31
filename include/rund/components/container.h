@@ -6,18 +6,11 @@
 extern "C" {
 #endif
 
-typedef struct container_decoration
-{
-	color_t color;
-} container_decoration_t;
-
-#define ContainerDec(...) ((container_decoration_t*)clone(&(container_decoration_t){__VA_ARGS__}, sizeof(container_decoration_t)))
-
 typedef struct container_attributes
 {
 	char id[ID_LEN];
-	container_decoration_t* decoration;
 	component_t* child;
+	color_t* color;
 	size_t* width;
 	size_t* height;
 } container_attributes_t;

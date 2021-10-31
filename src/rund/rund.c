@@ -250,7 +250,7 @@ draw_data_t draw_container(const container_t* container, const build_context_t c
         for (uint64_t x = 0; x < data.dims.width; x++)
         {
             color_t* bg_pixel = &context.backbuffer.data[y * context.backbuffer.width + x];
-            *bg_pixel = blend(*bg_pixel, attributes->decoration->color);
+            *bg_pixel = blend(*bg_pixel, *attributes->color);
         }
 
     if(attributes->child != NULL)
@@ -497,8 +497,8 @@ draw_data_t draw_constrained_box(const constrained_box_t* constrained_box, const
     build_context_t child_context = {
         .max_height = min(context.max_height, attributes->constraints->max_height),
         .min_height = max(context.min_height, attributes->constraints->min_height),
-        .max_width = max(context.min_width, attributes->constraints->min_width),
-        .min_width = min(context.max_width, attributes->constraints->max_width),
+        .max_width = min(context.max_width, attributes->constraints->max_width),
+        .min_width = max(context.min_width, attributes->constraints->min_width),
         .backbuffer = context.backbuffer
     };
     

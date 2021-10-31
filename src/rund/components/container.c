@@ -11,7 +11,7 @@ container_t* container_create(container_attributes_t attributes)
 	component->attributes.child = attributes.child;
 	component->attributes.width = attributes.width ?: attributes.child ? 0 : Val((size_t)0);
 	component->attributes.height = attributes.height ?: attributes.child ? 0 : Val((size_t)0);
-	component->attributes.decoration = attributes.decoration ?: ContainerDec(.color = 0x00000000);
+	component->attributes.color = attributes.color ?: Val((color_t)0x00000000);
 
 	component->base.type = CONTAINER;
 	memcpy(component->base.id, attributes.id, ID_LEN);
