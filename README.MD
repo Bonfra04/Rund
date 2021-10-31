@@ -1,5 +1,5 @@
 # Rund
-Rund is a powefull graphics api designed to build fast and responsive application without caring of the developing platforms. It is inspired by [Flutter](https://github.com/flutter/flutter) but it evolved to a pretty different, even if similar, api.<br>
+Rund is a poweful graphics api designed to build fast and responsive application without caring of the developing platforms. It is inspired by [Flutter](https://github.com/flutter/flutter) but it evolved to a pretty different, even if similar, api. It is also written in C so is considerably faster.<br>
 Initially rund was meant to be used in conjunction with [my OS](https://github.com/Bonfra04/BonsOS) (this is still the final goal) but it escalated to something bigger.
 
 ### Notes
@@ -29,7 +29,7 @@ int rund_main()
         0, 0, // window spawn coordinates
         500, 500, // window size
         Text(
-            .text = L"Hello, world!"
+            .text = L"Hello, world!" // unicode string
         )
     };
 
@@ -43,7 +43,7 @@ Rund works by rendering a series of components starting from a root, parent of a
 The last field of the `rund_app` struct is the root component, every child of this component is rendered.
 
 ## Fields
-Since Rund aims to be dynamic, every component field is allocated trought a custom garbage collector in the haep, this also makes possible having `null` fields. For this reason whenever assigning a field to a static value the `Val` macro must be used among with the appropriate cast, on the other side if the field should be bound to a variable it must be assigned using the `Ref` macro. For example a container will need its dimensions specificied in the following way:
+Since Rund aims to be dynamic, every component field is allocated trought a custom garbage collector in the heap, this also makes possible having `null` fields. For this reason whenever assigning a field to a static value the `Val` macro must be used among with the appropriate cast, on the other side if the field should be bound to a variable it must be assigned using the `Ref` macro. For example a container will need its dimensions specificied in the following way:
 ```c
 size_t some_value = 200;
 //...
@@ -52,6 +52,7 @@ Container(
     .height = Ref(some_value), // dynamic value bound to a variable
 )
 ```
+Be sure to use unicodes strings were required.
 
 ### Components
 
@@ -89,4 +90,4 @@ Align(
 ## Notes:
 * All the compoents not listed in the reference are considered unfinished or unreliable.
 * Even if a component is considered finished and is documented it may be bug prone and  incline to modifications.
-* Finally this is still a working process to don't expect things to stay the same.
+* Finally this is still a work in progress so don't expect things to stay the same.
