@@ -53,6 +53,28 @@ Container(
 )
 ```
 
+## IDs
+Every component has a `id` field that helps differentiate each and every widget and retrive a pointer to them in the future.
+```c
+void click(component_t* self)
+{
+    container_t* container = rund_get_component("Container");
+    container->color = Val((color_t)0xFF0000FF);
+}
+//...
+Listener(
+    .child = Container(
+        .id = "Container",
+        .width = Val((size_t)100),
+        .height = Val((size_t)100),
+        .color = Val((color_t)0xFFFF0000)
+    ),
+    .handlers = Handlers(
+        .on_pointer_down = click
+    )
+)
+```
+
 ### Components
 
 **Container**<br>

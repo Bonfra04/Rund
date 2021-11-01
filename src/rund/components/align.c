@@ -10,8 +10,8 @@ align_t* align_create(align_attributes_t attributes)
 {
     align_t* component = (align_t*)gc_alloc(sizeof(align_t));
 
-    component->attributes.child = attributes.child;
-    component->attributes.alignment = attributes.alignment ?: Alignment(0.0f, 0.0f);
+    component->child = attributes.child;
+    component->alignment = attributes.alignment ?: Alignment(0.0f, 0.0f);
 
 	component->base.type = ALIGN;
 	memcpy(component->base.id, attributes.id, ID_LEN);
