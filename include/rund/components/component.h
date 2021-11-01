@@ -40,12 +40,12 @@ typedef struct component_list
 
 #define list(...) (clone(&(component_list_t){((component_t**)(component_t*[]){__VA_ARGS__}), vrg_argn(__VA_ARGS__)}, sizeof(component_list_t)))
 
-#define Component(name, ...)		\
-typedef struct name##_attributes	\
-{									\
+#define Component(name, ...)        \
+typedef struct name##_attributes    \
+{                                   \
     char id[ID_LEN];                \
-    __VA_ARGS__						\
-} name##_attributes_t;		        \
+    __VA_ARGS__                     \
+} name##_attributes_t;              \
 typedef struct name                 \
 {                                   \
     component_t base;               \
