@@ -1,5 +1,5 @@
 # Rund
-Rund is a poweful graphics api designed to build fast and responsive application without caring of the developing platforms. It is inspired by [Flutter](https://github.com/flutter/flutter) but it evolved to a pretty different, even if similar, api. It is also written in C so is considerably faster.<br>
+Rund is a poweful graphics api designed to build fast and responsive application without caring about the developing platforms. It is inspired by [Flutter](https://github.com/flutter/flutter) but it evolved to a pretty different, even if similar, api. It is also written in C so is considerably faster.<br>
 Initially rund was meant to be used in conjunction with [my OS](https://github.com/Bonfra04/BonsOS) (this is still the final goal) but it escalated to something bigger.
 
 ### Notes
