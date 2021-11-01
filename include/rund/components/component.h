@@ -2,6 +2,7 @@
 
 #include <rund/memory/allocation.h>
 #include <rund/vrg.h>
+#include <rund/core.h>
 
 #include <stdint.h>
 #include <stddef.h>
@@ -9,26 +10,22 @@
 
 #define ID_LEN 16
 
-typedef uint32_t color_t;
-
-typedef enum component_type
-{
-    EMPTY = 0,
-    CONTAINER,
-    LAYOUT,
-    FLEXIBLE,
-    ALIGN,
-    CONSTRAINED_BOX,
-    LISTENER,
-    TEXT
-} component_type_t;
+#define FLAG_NONE       (0 << 0)
+#define FLAG_FLEXIBLE   (1 << 0)
+#define FLAG_LISTENER   (1 << 1)
 
 typedef struct component component_t;
 
+typedef draw_data_t (*draw_func_t)(const component_t* component, const build_context_t context, uint64_t deepness);
+#define DrawFunc(func) ((draw_func_t)func)
+
+draw_data_t draw_component(const component_t* component, const component_t* parent, const build_context_t context, uint64_t deepness);
+
 typedef struct component
 {
-    component_type_t type;
     component_t* parent;
+    draw_func_t draw_func;
+	uint8_t flags;
     char id[ID_LEN];
 } __attribute__((packed)) component_t;
 

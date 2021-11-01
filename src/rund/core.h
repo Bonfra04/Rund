@@ -1,7 +1,5 @@
 #pragma once
 
-#include <rund.h>
-
 #include <rund/utils/vector.h>
 #include <rund/memory/gc.h>
 
@@ -36,6 +34,8 @@ typedef struct draw_data
 	coord_t coords;
 	vector_t childs;
 } draw_data_t;
+
+typedef struct component component_t;
 
 typedef struct widget_position
 {
