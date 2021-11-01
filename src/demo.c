@@ -5,46 +5,29 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void click(component_t* self)
-{
-    printf("%s\n", self->id);
-}
-
 int rund_main()
 {
+    size_t some_value = 200;
     rund_app_t app = {
         "Andrea",
         0, 0,
         500, 500,
         Layout(
-            .laying_style = Val(Stack),
+            .laying_style = Val((laying_style_t)Stack),
             .children = list(
-                Listener(
-                    .id = "rosso",
-                    .child = Align(
-                        .alignment = Alignment(0, 0),
-                        .child = Container(
-                            .child = Flexible(
-                                .child = Container(
-                                    .decoration = ContainerDec(.color = 0xFFFF0000),
-                                    .width = Val((size_t)100),
-                                    .height = Val((size_t)100),
-                                )
-                            ),
-                            .width = Val((size_t)200),
-                            .height = Val((size_t)200),
-                        ),
-                    ),
-                    .handlers = Handlers(.on_pointer_down = click)
+                Align(
+                    .child =  Container(
+                        .width = Val((size_t)100),
+                        .height = Val((size_t)100),
+                        .color = Val((color_t)0xFFFF00FF),
+                    )
                 ),
-                Listener(
-                    .id = "testo",
-                    .child = Align(
-                        .child = Text(.text = L"AAAQ")
-                    ),
-                    .handlers = Handlers(.on_pointer_down = click)
+                Container(
+                    .width = Val((size_t)100),
+                    .height = Val((size_t)100),
+                    .color = Val((color_t)0xFF0000FF),
                 )
-            )
+           ) 
         )
     };
 
