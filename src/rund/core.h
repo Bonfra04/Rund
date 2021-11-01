@@ -37,6 +37,14 @@ typedef struct draw_data
 	vector_t childs;
 } draw_data_t;
 
+typedef struct widget_position
+{
+    dimension_t dimensions;
+    coord_t coords;
+    uint64_t z;
+    component_t* component;
+} widget_position_t;
+
 #define NULL_DRAW ((draw_data_t){ .dims = { 0, 0 }, .coords = { 0, 0 }, .childs = NULL })
 
 buffer_t buffer_create(size_t width, size_t height);

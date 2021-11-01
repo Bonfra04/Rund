@@ -8,6 +8,9 @@
 
 #include <string.h>
 #include <wchar.h>
+#include <time.h>
+
+#define FPS_CAP 60l
 
 extern int rund_main();
 
@@ -34,14 +37,7 @@ draw_data_t draw_constrained_box(const constrained_box_t* constrained_box, const
 draw_data_t draw_listener(const listener_t* listener, const build_context_t context, uint64_t deepness);
 draw_data_t draw_text(const text_t* text, const build_context_t context, uint64_t deepness);
 
-typedef struct widget_position
-{
-    dimension_t dimensions;
-    coord_t coords;
-    uint64_t z;
-    component_t* component;
-} widget_position_t;
-
+static rund_app_t* app;
 static vector_t widgets;
 static uint64_t deepness;
 static listener_t* focus_node;
@@ -112,12 +108,19 @@ static void on_key_up(uint16_t key)
         focus_node->attributes.handlers->on_key_up((component_t*)focus_node, key);
 }
 
-static rund_app_t* app;
-
 static void on_resize(uint64_t width, uint64_t height)
 {
     app->width = width;
     app->height = height;
+}
+
+double frame_time()
+{
+    static clock_t start;
+    clock_t end = clock();
+    double cpu_used_time = (double)(end - start) / CLOCKS_PER_SEC * 1000.0;
+    start = clock();
+    return cpu_used_time;
 }
 
 void run_app(rund_app_t* rund_app)
@@ -136,6 +139,8 @@ void run_app(rund_app_t* rund_app)
 
     do
     {
+        platform_msleep(1000l / FPS_CAP - (int)frame_time());
+
         if(widgets)
             vector_destroy(widgets);
         deepness = 0;

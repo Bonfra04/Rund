@@ -19,6 +19,8 @@ bool event_loop();
 void put_pixel(size_t x, size_t y, uint32_t color);
 void flush();
 
+void platform_msleep(long ms);
+
 #ifdef __cplusplus
 }
 #endif

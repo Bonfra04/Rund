@@ -7,6 +7,8 @@
 #include <X11/XKBlib.h>
 #include <GL/glx.h>
 
+#include <time.h>
+
 static Display* display;
 static Window window;
 static GC gc;
@@ -99,6 +101,22 @@ void put_pixel(size_t x, size_t y, uint32_t color)
 void flush()
 {
     XFlush(display);
+}
+
+void platform_msleep(long msec)
+{
+    if(msec <= 0)
+        return;
+    struct timespec ts = {
+        .tv_sec = msec / 1000,
+        .tv_nsec = (msec % 1000) * 1000000
+    };
+
+    int res;
+
+    do {
+        res = nanosleep(&ts, &ts);
+    } while (res);
 }
 
 #include <stdio.h>
