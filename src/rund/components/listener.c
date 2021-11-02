@@ -1,8 +1,6 @@
 #include <rund.h>
 #include <rund/memory/gc.h>
-#include <rund/log.h>
 #include <rund/utils/max.h>
-#include <rund/renderer.h>
 
 #include <string.h>
 
@@ -24,7 +22,6 @@ listener_t* listener_create(listener_attributes_t attributes)
     component->base.flags = FLAG_LISTENER;
     memcpy(component->base.id, attributes.id, ID_LEN);
 
-    TRACE("Component Created {Listener}\t[%s]", 0, attributes.id);
     return component;
 }
 

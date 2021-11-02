@@ -1,8 +1,8 @@
 #include <rund.h>
 #include <rund/memory/gc.h>
-#include <rund/log.h>
 #include <rund/utils/max.h>
-#include <rund/renderer.h>
+
+#include "rund/renderer.h"
 
 #include <wchar.h>
 #include <string.h>
@@ -20,7 +20,6 @@ text_t* text_create(text_attributes_t attributes)
     component->base.flags = FLAG_NONE;
 	memcpy(component->base.id, attributes.id, ID_LEN);
 
-	TRACE("Component Created {TEXT}\t[%s]", 0, attributes.id);
 	return component;
 }
 

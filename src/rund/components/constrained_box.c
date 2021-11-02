@@ -1,6 +1,5 @@
 #include <rund.h>
 #include <rund/memory/gc.h>
-#include <rund/log.h>
 #include <rund/utils/max.h>
 
 #include <string.h>
@@ -18,7 +17,6 @@ constrained_box_t* constrained_box_create(constrained_box_attributes_t attribute
     component->base.flags = FLAG_NONE;
 	memcpy(component->base.id, attributes.id, ID_LEN);
 
-    TRACE("Component Created {ConstrainedBox}\t[%s]", 0, attributes.id);
 	return component;
 }
 

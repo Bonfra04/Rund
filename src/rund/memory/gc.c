@@ -1,4 +1,4 @@
-#include <rund/memory/gc.h>
+#include "rund/memory/internal_gc.h"
 
 #include <stdlib.h>
 #include <stdbool.h>

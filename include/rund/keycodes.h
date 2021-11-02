@@ -2,6 +2,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define RK_A        0x00
 #define RK_B        0x01
 #define RK_C        0x02
@@ -68,3 +72,7 @@
 #define RK_space    0x3E
 
 uint8_t keycode_to_ascii(uint8_t keycode, uint8_t *ascii);
+
+#ifdef __cplusplus
+extern "C" }
+#endif

@@ -1,6 +1,7 @@
 #pragma once
 
-#include <stddef.h>
+#include <rund/memory/gc.h>
+
 #include <stdint.h>
 
 typedef struct gc_entry
@@ -20,8 +21,6 @@ typedef struct gc
 
 void gc_init(gc_t* gc, void* stack);
 void gc_stop();
-void* gc_alloc(size_t size);
 void gc_free(void* ptr);
 void gc_collect();
 void gc_dump();
-

@@ -1,8 +1,16 @@
-#include <rund/renderer.h>
-#include <rund/ttf/ttf.h>
+#include <rund/rendering.h>
+
+#include "rund/renderer.h"
+#include "rund/ttf/ttf.h"
 
 #include <stdlib.h>
 #include <string.h>
+
+typedef struct point
+{
+    float x;
+    float y;
+} point_t;
 
 static ttf_t ttf;
 
@@ -11,20 +19,13 @@ void renderer_init()
     ttf_load("Monaco.ttf", &ttf);
 }
 
-void plot_pixel(const buffer_t* buffer, uint64_t x, uint64_t y, const color_t color)
+void plot_pixel(const buffer_t* buffer, color_t color, uint64_t x, uint64_t y)
 {
     if(x >= 0 && x < buffer->width && y >= 0 && y < buffer->height)
         buffer->data[y * buffer->width + x] = color;
 }
 
-uint64_t get_pixel(const buffer_t* buffer, uint64_t x, uint64_t y)
-{
-    if(x >= 0 && x < buffer->width && y >= 0 && y < buffer->height)
-        return buffer->data[y * buffer->width + x];
-    return 0;
-}
-
-void draw_line(uint64_t x0, uint64_t y0, uint64_t x1, uint64_t y1, color_t color, const buffer_t* buffer)
+void draw_line(const buffer_t* buffer, color_t color, uint64_t x0, uint64_t y0, uint64_t x1, uint64_t y1)
 {
     int32_t x, y, xe, ye;
 
@@ -104,18 +105,12 @@ void draw_line(uint64_t x0, uint64_t y0, uint64_t x1, uint64_t y1, color_t color
     }
 }
 
-uint64_t bezier_coord(float t, float p0, float p1, float p2)
+static uint64_t bezier_coord(float t, float p0, float p1, float p2)
 {
     return (p0 - 2 * p1 + p2) * t * t + (2 * p1 - 2 * p0) * t + p0;
 }
 
-typedef struct point
-{
-    float x;
-    float y;
-} point_t;
-
-point_t bezier_point(point_t points[3], float t)
+static point_t bezier_point(point_t points[3], float t)
 {
     return (point_t){
         .x = bezier_coord(t, points[0].x, points[1].x, points[2].x),
@@ -123,14 +118,14 @@ point_t bezier_point(point_t points[3], float t)
     };
 }
 
-void bezier_curve(point_t cpoints[3], size_t num_points, point_t* result)
+static void bezier_curve(point_t cpoints[3], size_t num_points, point_t* result)
 {
     float t = 1.0 / (num_points - 1);
     for(size_t i = 0; i < num_points; i++)
         result[i] = bezier_point(cpoints, i * t);
 }
 
-void process_bezier(point_t cpoints[3], color_t color, const buffer_t* buffer)
+static void process_bezier(point_t cpoints[3], color_t color, const buffer_t* buffer)
 {
     #define BEZIER_POINTS 100
 
@@ -198,7 +193,7 @@ draw_data_t draw_character(const buffer_t* buffer, color_t color, wchar_t charac
 
             if(onCurve[i % num_points])
             {
-                draw_line(last_oncurve.x, last_oncurve.y, point.x, point.y, color, &contour_buffer);
+                draw_line(&contour_buffer, color, last_oncurve.x, last_oncurve.y, point.x, point.y);
                 last_oncurve = point;
                 continue;
             }
@@ -215,7 +210,7 @@ draw_data_t draw_character(const buffer_t* buffer, color_t color, wchar_t charac
             last_oncurve = cpoints[2];
             process_bezier(cpoints, color, &contour_buffer);
         }
-        draw_line(last_oncurve.x, last_oncurve.y, xPoints[first], yPoints[first], color, &contour_buffer);
+        draw_line(&contour_buffer, color, last_oncurve.x, last_oncurve.y, xPoints[first], yPoints[first]);
 
         for(uint64_t y = 0; y < buffer->height; y++)
             for(uint64_t x = 0; x < buffer->width; x++)
@@ -227,17 +222,9 @@ draw_data_t draw_character(const buffer_t* buffer, color_t color, wchar_t charac
 
     for(size_t i = 0; i < buffer->width * buffer->height; i++)
         if(tmp_buffer[i] % 2 == 1)
-            BLEND(buffer->data[i], color);
+            buffer->data[i] = blend(buffer->data[i], color);
 
     data.dims.width = ttf.metrics[glyf_id].advanceWidth * scale;
     data.dims.height = (abs(ttf.head.ymax) + abs(ttf.head.ymin) + offY) * scale + 1;
     return data;
-}
-
-color_t blend(color_t bg, color_t fg)
-{
-    if(fg & 0xFF000000)
-        return fg;
-    else
-        return bg;
 }

@@ -1,4 +1,4 @@
-#include <rund/core.h>
+#include <rund/rendering.h>
 
 #include <stdlib.h>
 
@@ -19,4 +19,12 @@ void buffer_destroy(buffer_t* buffer)
     free(buffer->data);
     buffer->width = 0;
     buffer->height = 0;
+}
+
+color_t blend(color_t bg, color_t fg)
+{
+    if(fg & 0xFF000000)
+        return fg;
+    else
+        return bg;
 }

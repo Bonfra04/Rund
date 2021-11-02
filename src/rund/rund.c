@@ -1,11 +1,8 @@
 #include <rund.h>
-#include <rund/core.h>
-#include <rund/wrapper.h>
-#include <rund/utils/vector.h>
-#include <rund/log.h>
-#include <rund/renderer.h>
-#include <rund/utils/max.h>
-#include <rund/renderer.h>
+
+#include "rund/wrapper.h"
+#include "rund/renderer.h"
+#include "rund/memory/internal_gc.h"
 
 #include <string.h>
 #include <wchar.h>
@@ -162,8 +159,6 @@ void run_app(rund_app_t* rund_app)
 
         flush();
     } while (event_loop());
-
-    TRACE("Rund app terminated\n", 0);
 }
 
 component_t* rund_get_component(char id[ID_LEN])

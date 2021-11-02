@@ -2,11 +2,15 @@
 
 #include <rund/memory/allocation.h>
 #include <rund/vrg.h>
-#include <rund/core.h>
+#include <rund/rendering.h>
 
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define ID_LEN 16
 
@@ -49,3 +53,7 @@ typedef struct name                 \
     __VA_ARGS__                     \
 } __attribute__((packed)) name##_t;	\
 name##_t* name##_create(name##_attributes_t attributes)
+
+#ifdef __cplusplus
+extern "C" }
+#endif

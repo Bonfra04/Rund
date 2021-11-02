@@ -2,6 +2,7 @@
 
 #include <rund/components.h>
 #include <rund/keycodes.h>
+#include <rund/rendering.h>
 
 #ifdef __cplusplus
 extern "C" {

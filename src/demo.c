@@ -1,5 +1,4 @@
 #include <rund.h>
-#include <rund/memory/gc.h>
 
 #include <string.h>
 #include <stdlib.h>

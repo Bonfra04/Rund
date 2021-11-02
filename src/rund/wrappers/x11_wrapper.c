@@ -1,7 +1,6 @@
 #ifdef __linux__
 
-#include <rund/wrapper.h>
-#include <rund/keycodes.h>
+#include "rund/wrapper.h"
 
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>

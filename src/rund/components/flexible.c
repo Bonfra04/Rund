@@ -1,8 +1,6 @@
 #include <rund.h>
 #include <rund/memory/gc.h>
-#include <rund/log.h>
 #include <rund/utils/max.h>
-#include <rund/renderer.h>
 
 #include <string.h>
 
@@ -19,7 +17,6 @@ flexible_t* flexible_create(flexible_attributes_t attributes)
     component->base.flags = FLAG_FLEXIBLE;
 	memcpy(component->base.id, attributes.id, ID_LEN);
 
-    TRACE("Component Created {Flexible}\t[%s]", 0, attributes.id);
 	return component;
 }
 

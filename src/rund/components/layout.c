@@ -1,8 +1,6 @@
 #include <rund.h>
 #include <rund/memory/gc.h>
-#include <rund/log.h>
 #include <rund/utils/max.h>
-#include <rund/renderer.h>
 
 #include <string.h>
 
@@ -19,7 +17,6 @@ layout_t* layout_create(layout_attributes_t attributes)
     component->base.flags = FLAG_NONE;
 	memcpy(component->base.id, attributes.id, ID_LEN);
 
-    TRACE("Component Created {Layout}\t[%s]", 0, attributes.id);
 	return component;
 }
 
