@@ -93,7 +93,7 @@ Container(
 ```
 
 **Align**<br>
-This component reposition the child, accordin to the `alignment` field (default to `(0.0, 0.0)`), inside the parent. an alignment of `(0.0, 0.0)` will center the child; `(-1.0, -1.0)` will put it in the top left corner; `(1.0, 1.0)` will put it in the bottom right corner. Any other value will place the widget according to its value.
+This component reposition the child, accordin to the `alignment` field (default to `(0.0, 0.0)`), inside the parent. An alignment of `(0.0, 0.0)` will center the child; `(-1.0, -1.0)` will put it in the top left corner; `(1.0, 1.0)` will put it in the bottom right corner. Any other value will place the widget according to its value.
 ```c
 // fields
 Align(alignment_t alignment, component_t child)
@@ -108,6 +108,30 @@ Align(
     )
 )
 ```
+
+**Layout**<br>
+This components allows to render multplie childs following the `laying_style` field. This field can be either `Stack`, `Column` or `Row`. `Stack` just renders the childs in the available space, the child will be responsible for its positioning. `Column` and `Row` lays the child one after another respectively vertically or horizontally.
+```c
+// fields
+Layout(laying_style_t laying_style, component_list_t children)
+
+// example
+Layout(
+    .laying_style = Val((laying_style_t)Row),
+    .children = list(
+        Flexible(
+            .child = Text(
+                .text = L"Hello, World!"
+            )
+        ),
+        Container(
+            .width = Val((size_t)200),
+            .height = Val((size_t)100),
+            .color = Val((color_t)0xFF0000FF),
+        )
+    ) 
+)
+```  
 
 ## Notes:
 * All the compoents not listed in the reference are considered unfinished or unreliable.
