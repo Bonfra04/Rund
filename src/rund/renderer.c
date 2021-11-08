@@ -51,7 +51,7 @@ void draw_line(const buffer_t* buffer, color_t color, uint64_t x0, uint64_t y0, 
             xe = x0;
         }
 
-        plot_pixel(buffer, x, y, color);
+        plot_pixel(buffer, color, x, y);
         
         for (int32_t i = 0; x < xe; i++)
         {
@@ -66,7 +66,7 @@ void draw_line(const buffer_t* buffer, color_t color, uint64_t x0, uint64_t y0, 
                     y = y - 1;
                 px = px + 2 * (dy1 - dx1);
             }
-            plot_pixel(buffer, x, y, color);
+            plot_pixel(buffer, color, x, y);
         }
     }
     else
@@ -84,7 +84,7 @@ void draw_line(const buffer_t* buffer, color_t color, uint64_t x0, uint64_t y0, 
             ye = y0;
         }
 
-        plot_pixel(buffer, x, y, color);
+        plot_pixel(buffer, color, x, y);
 
         for (int32_t i = 0; y < ye; i++)
         {
@@ -100,7 +100,7 @@ void draw_line(const buffer_t* buffer, color_t color, uint64_t x0, uint64_t y0, 
                 py = py + 2 * (dx1 - dy1);
             }
 
-            plot_pixel(buffer, x, y, color);
+            plot_pixel(buffer, color, x, y);
         }
     }
 }
@@ -133,7 +133,7 @@ static void process_bezier(point_t cpoints[3], color_t color, const buffer_t* bu
     bezier_curve(cpoints, BEZIER_POINTS, points);
     
     for(size_t i = 0; i < BEZIER_POINTS; i++)
-        plot_pixel(buffer, points[i].x, points[i].y, color);
+        plot_pixel(buffer, color, points[i].x, points[i].y);
 
     #undef BEZIER_POINTS
 }
