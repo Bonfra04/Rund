@@ -12,17 +12,15 @@ int rund_main()
         0, 0,
         500, 500,
         Layout(
-            .laying_style = Val((laying_style_t)Stack),
+            .laying_style = Val((laying_style_t)Column),
             .children = list(
-                Align(
-                    .child =  Container(
-                        .width = Val((size_t)100),
-                        .height = Val((size_t)100),
-                        .color = Val((color_t)0xFFFF00FF),
-                    )
+                Flexible(
+                    .child = Text(
+                        .text = L"Hello, World!"
+                    ),
                 ),
                 Container(
-                    .width = Val((size_t)100),
+                    .width = Val((size_t)200),
                     .height = Val((size_t)100),
                     .color = Val((color_t)0xFF0000FF),
                 )
