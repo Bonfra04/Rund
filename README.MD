@@ -131,7 +131,38 @@ Layout(
         )
     ) 
 )
-```  
+```
+
+**Flexible**
+This component forces its child to expand, filling all the available space. It has a `flex` field that describes how multiple flexibles in the same layout will share the available space.
+```c
+// fields
+Flexible(component_t child, uint64_t flex)
+
+// example
+Layout(
+    .laying_style = Val((laying_style_t)Row),
+    .children = list(
+        Flexible(
+            .child = Text(
+                .text = L"Hello, World!"
+            ),
+            .flex = Val((uint64_t)1) // this flexible will occupy 1/3 of the space
+        ),
+        Container(
+            .width = Val((size_t)200),
+            .height = Val((size_t)100),
+            .color = Val((color_t)0xFF0000FF),
+        ),
+        Flexible(
+            .child = Text(
+                .text = L"Hello, World!"
+            ),
+            .flex = Val((uint64_t)2) // this flexible will occupy 2/3 of the space
+        )
+    ) 
+)
+```
 
 ## Notes:
 * All the compoents not listed in the reference are considered unfinished or unreliable.

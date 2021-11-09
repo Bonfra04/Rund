@@ -10,8 +10,8 @@ layout_t* layout_create(layout_attributes_t attributes)
 {
 	layout_t* component = (layout_t*)gc_alloc(sizeof(layout_t));
 
-	component->attributes.children = attributes.children;
-	component->attributes.laying_style = attributes.laying_style ?: Stack;
+	component->children = attributes.children;
+	component->laying_style = attributes.laying_style ?: Stack;
 	
     component->base.draw_func = DrawFunc(draw_layout);
     component->base.flags = FLAG_NONE;
@@ -25,9 +25,7 @@ static draw_data_t draw_layout(const layout_t* layout, const build_context_t con
     draw_data_t data = NULL_DRAW;
     data.childs = vector_create(widget_position_t);
 
-    const layout_attributes_t* attributes = &(layout->attributes);
-
-    size_t num_childs = attributes->children->length;
+    size_t num_childs = layout->children->length;
 
     buffer_t backbuffers[num_childs];
     draw_data_t datas[num_childs];
@@ -37,17 +35,17 @@ static draw_data_t draw_layout(const layout_t* layout, const build_context_t con
     uint64_t limiting_dimension;
     uint64_t flex_count = 0;
     uint64_t flexible_space =
-        *attributes->laying_style == Column ? context.max_height :
-        *attributes->laying_style == Row ? context.max_width :
+        *layout->laying_style == Column ? context.max_height :
+        *layout->laying_style == Row ? context.max_width :
         0;
 
     // draw unflexibles
     for(uint64_t i = 0; i < num_childs; i++)
     {
-        component_t* child = attributes->children->components[i];
+        component_t* child = layout->children->components[i];
         if(child->flags & FLAG_FLEXIBLE)
         {
-            flex_count += *((flexible_t*)child)->attributes.flex;
+            flex_count += *((flexible_t*)child)->flex;
             continue;
         }
 
@@ -60,14 +58,14 @@ static draw_data_t draw_layout(const layout_t* layout, const build_context_t con
 
         datas[i] = draw_component(child, (component_t*)layout, child_context, deepness + (num_childs - i));
     
-        if(*attributes->laying_style == Column)
+        if(*layout->laying_style == Column)
         {
             uint64_t furthest_point = datas[i].dims.width + datas[i].coords.x;
             if(i == 0 || furthest_point > limiting_dimension)
                 limiting_dimension = furthest_point;
             flexible_space -= datas[i].dims.height;
         }
-        else if(*attributes->laying_style == Row)
+        else if(*layout->laying_style == Row)
         {
             uint64_t furthest_point = datas[i].dims.height + datas[i].coords.y;
             if(i == 0 || furthest_point > limiting_dimension)
@@ -79,16 +77,16 @@ static draw_data_t draw_layout(const layout_t* layout, const build_context_t con
     // draw flexibles
     for(int i = 0; i < num_childs; i++)
     {
-        flexible_t* child = (flexible_t*)attributes->children->components[i];
+        flexible_t* child = (flexible_t*)layout->children->components[i];
         if((child->base.flags & FLAG_FLEXIBLE) == 0)
             continue;
 
         uint64_t width =
-            *layout->attributes.laying_style != Row ? context.max_width :
-            flexible_space / flex_count * *child->attributes.flex;
+            *layout->laying_style != Row ? context.max_width :
+            flexible_space / flex_count * *child->flex;
         uint64_t height =
-            *layout->attributes.laying_style != Column ? context.max_height :
-            flexible_space / flex_count * *child->attributes.flex;
+            *layout->laying_style != Column ? context.max_height :
+            flexible_space / flex_count * *child->flex;
 
         backbuffers[i] = buffer_create(context.max_width, context.max_height);
         build_context_t child_context = {
@@ -149,7 +147,7 @@ static draw_data_t draw_layout(const layout_t* layout, const build_context_t con
             .dimensions = datas[i].dims,
             .coords = child_top_left,
             .z = deepness + ongoing_deepness,
-            .component = attributes->children->components[i]
+            .component = layout->children->components[i]
         };
         vector_push_back(data.childs, child_pos);
 
@@ -163,9 +161,9 @@ static draw_data_t draw_layout(const layout_t* layout, const build_context_t con
     
         buffer_destroy(child_buffer);
 
-        if(*layout->attributes.laying_style == Column)
+        if(*layout->laying_style == Column)
             advance_y += datas[i].dims.height;
-        else if(*layout->attributes.laying_style == Row)
+        else if(*layout->laying_style == Row)
             advance_x += datas[i].dims.width;
     }
 
