@@ -133,7 +133,7 @@ Layout(
 )
 ```
 
-**Flexible**
+**Flexible**<br>
 This component forces its child to expand, filling all the available space. It has a `flex` field that describes how multiple flexibles in the same layout will share the available space.
 ```c
 // fields
