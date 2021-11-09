@@ -1,6 +1,6 @@
 #pragma once
 
-#include "component.h"
+#include <rund/component.h>
 
 #ifdef __cplusplus
 extern "C" {
