@@ -12,7 +12,7 @@ CC_FLAGS = -g -O0 -c -I $(DIR_ROOT)/include -I $(DIR_ROOT)/src -Wno-address-of-p
 all: clean lib
 	@mkdir -p $(DIR_BIN)
 	@echo "Linking demo.elf"
-	@gcc $(CC_FLAGS) $(DIR_ROOT)/src/demo.c -o $(DIR_OBJ)/demo.o
+	@gcc -g -c -I $(DIR_ROOT)/include $(DIR_ROOT)/src/demo.c -o $(DIR_OBJ)/demo.o
 	@gcc $(DIR_OBJ)/demo.o $(DIR_BIN)/rund.a -lX11 -lGL -o $(DIR_BIN)/demo.elf
 
 lib: $(OBJ_FILES)
