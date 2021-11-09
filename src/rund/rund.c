@@ -50,10 +50,10 @@ static listener_t* get_listener(uint64_t x, uint64_t y)
         return NULL;
 
     component_t* component = target->component;
-    while(component != NULL && component->flags & FLAG_LISTENER)
+    while(component != NULL && !(component->flags & FLAG_LISTENER))
         component = component->parent;
 
-    if(component == NULL)
+    if(component == NULL || !(component->flags & FLAG_LISTENER))
         return NULL;
 
     return (listener_t*)component;
