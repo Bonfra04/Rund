@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <wchar.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -71,7 +72,8 @@ extern "C" {
 
 #define RK_space    0x3E
 
-uint8_t keycode_to_ascii(uint8_t keycode, uint8_t *ascii);
+char keycode_to_ascii(uint16_t keycode);
+wchar_t keycode_to_unicode(uint16_t keycode);
 
 #ifdef __cplusplus
 extern "C" }
