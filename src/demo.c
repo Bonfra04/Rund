@@ -1,4 +1,5 @@
 #include <rund.h>
+#include <rund/memory/gc.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -6,37 +7,46 @@
 
 void click(component_t* self)
 {
-    printf("HEH\n");
+    listener_t* listener = (listener_t*)rund_get_component("listener");
+    rund_acquire_focus(listener);
+}
+
+void type(component_t* self, uint16_t keycode)
+{
+    wchar_t ch = keycode_to_unicode(keycode);
+    if(ch != 0)
+    {
+        text_t* text = (text_t*)rund_get_component("text");
+        size_t old_len = wcslen(text->attributes.text);
+        wchar_t* new_text = gc_alloc(sizeof(wchar_t) * (old_len + 2));
+        wcscpy(new_text, text->attributes.text);
+        new_text[old_len + 0] = ch;
+        new_text[old_len + 1] = L'\0';
+        text->attributes.text = new_text;
+    }
 }
 
 int rund_main()
 {
-    size_t some_value = 200;
     rund_app_t app = {
         "Andrea",
         0, 0,
         500, 500,
-        Layout(
-            .laying_style = Val((laying_style_t)Row),
-            .children = list(
-                Flexible(
-                    .child = Text(
-                        .text = L"Hello, World!"
-                    ),
-                    .flex = Val((uint64_t)1) // this flexible will occupy 1/3 of the space
+        Listener(
+            .id = "listener",
+            .child = Container(
+                .child = Text(
+                    .id = "text",
+                    .text = L""
                 ),
-                Container(
-                    .width = Val((size_t)200),
-                    .height = Val((size_t)100),
-                    .color = Val((color_t)0xFF0000FF),
-                ),
-                Flexible(
-                    .child = Text(
-                        .text = L"Hello, World!"
-                    ),
-                    .flex = Val((uint64_t)2) // this flexible will occupy 2/3 of the space
-                )
-            ) 
+                .width = Val((size_t)300),
+                .height = Val((size_t)100),
+                .color = Val((color_t)0xFFaaaaaa)
+            ),
+            .handlers = Handlers(
+                .on_pointer_down = click,
+                .on_key_down = type
+            )
         )
     };
 
