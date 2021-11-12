@@ -76,5 +76,5 @@ char keycode_to_ascii(uint16_t keycode);
 wchar_t keycode_to_unicode(uint16_t keycode);
 
 #ifdef __cplusplus
-extern "C" }
+}
 #endif

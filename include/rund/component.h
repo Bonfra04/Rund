@@ -55,5 +55,5 @@ typedef struct name                 \
 name##_t* name##_create(name##_attributes_t attributes)
 
 #ifdef __cplusplus
-extern "C" }
+}
 #endif

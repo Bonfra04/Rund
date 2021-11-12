@@ -18,5 +18,5 @@ uint64_t min_uint64_t(uint64_t a, uint64_t b);
 ))(a,b))
 
 #ifdef __cplusplus
-extern "C" }
+}
 #endif
