@@ -103,7 +103,7 @@ static void on_resize(uint64_t width, uint64_t height)
     app->height = height;
 }
 
-double frame_time()
+static double frame_time()
 {
     static clock_t start;
     clock_t end = clock();
