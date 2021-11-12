@@ -25,7 +25,7 @@ Inside rund's main function you are going to need to call `run_app` passing as t
 int rund_main()
 {
     rund_app_t app = {
-        "Rund App",
+        "Rund App", // app title
         0, 0, // window spawn coordinates
         500, 500, // window size
         Text(
@@ -79,7 +79,7 @@ Listener(
 ### Components
 
 **Container**<br>
-This component is designed to have a single child, with the `color` field you can set a background color for the child (default is transparent). using  the `width` and `height` fields you can specify the maximum dimensions for the child. id the child is smaller the rest of the space is filled using the `color` field. if `width` or `height` are null the size of the child in the missing dimension will be used. If no child is provided a box dimensioned using `width` and `height` is drawed. if neither a child nor a dimension is specified, the minimu imposed by the parents is used (usually 0).
+This component is designed to have a single child, with the `color` field you can set a background color for the child (default is transparent). using  the `width` and `height` fields you can specify the maximum dimensions for the child. If the child is smaller the rest of the space is filled using the `color` field. if `width` or `height` are null the size of the child in the missing dimension will be used. If no child is provided a box dimensioned using `width` and `height` is drawed. if neither a child nor a dimension is specified, the minimum imposed by the parents is used (usually 0).
 ```c
 // fields
 Container(size_t width, size_t height, color_t color, component_t child)
