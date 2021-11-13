@@ -19,6 +19,9 @@ int rund_main();
 The return value will be used as return value for the standard c main after some cleanup.
 <br>
 
+### Building
+After downloading the binaries, or building them your own, you can a create a `.c` file with your code and then compile and link it with `gcc your_file.c /path_to/rund.a -I /path_to/include -lX11 -lGL`. 
+
 ### Basic usage
 Inside rund's main function you are going to need to call `run_app` passing as the only parameter a reference to a rund application. The way to construct an application is as easy as initializing a struct:
 ```c
