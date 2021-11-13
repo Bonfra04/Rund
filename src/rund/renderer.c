@@ -214,7 +214,7 @@ draw_data_t draw_character(const buffer_t* buffer, color_t color, wchar_t charac
 
         for(uint64_t y = 0; y < buffer->height; y++)
             for(uint64_t x = 0; x < buffer->width; x++)
-                if(contour_buffer.data[y * buffer->width + x] & 0xFF000000)
+                if(contour_buffer.data[y * buffer->width + x].a & 0xFF)
                     tmp_buffer[y * buffer->width + x] += 1;
 
         buffer_destroy(&contour_buffer);

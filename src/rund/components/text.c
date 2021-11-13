@@ -33,7 +33,7 @@ static draw_data_t draw_text(const text_t* text, const build_context_t context, 
 
     for(int i = 0; i < wcslen(attributes->text); i++)
     {
-        draw_data_t char_data = draw_character(&chars_buffer, 0xFFFFFFFF, attributes->text[i], data.dims.width, 0, *attributes->font_size);
+        draw_data_t char_data = draw_character(&chars_buffer, Color(0xFFFFFFFF), attributes->text[i], data.dims.width, 0, *attributes->font_size);
         
         size_t char_width = data.dims.width - char_data.coords.x + char_data.dims.width;
         data.dims.width += char_width;

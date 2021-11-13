@@ -9,7 +9,19 @@
 extern "C" {
 #endif
 
-typedef uint32_t color_t;
+typedef union color
+{
+	uint32_t argb;
+	struct
+	{
+		uint8_t a;
+		uint8_t r;
+		uint8_t g;
+		uint8_t b;
+	};
+} color_t;
+
+#define Color(color) ((color_t){ .argb = (color) })
 
 typedef struct buffer
 {

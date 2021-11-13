@@ -41,7 +41,7 @@ int rund_main()
                 ),
                 .width = Val((size_t)300),
                 .height = Val((size_t)100),
-                .color = Val((color_t)0xFFaaaaaa)
+                .color = Val(Color(0xFFaaaaaa))
             ),
             .handlers = Handlers(
                 .on_pointer_down = click,

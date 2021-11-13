@@ -57,13 +57,16 @@ Container(
 ```
 Be sure to use unicodes strings were required.
 
+## Colors
+Rund defines its colors using the `color_t` type. It's a union witht the raw argb value and the single color channels. It comes with a uitility `Color` macro that lets you specify a single value with all the channels like this: `color_t color = Color(0xFFFF00FF)`.
+
 ## IDs
 Every component has a `id` field that helps differentiate each and every widget and retrive a pointer to them in the future.
 ```c
 void click(component_t* self)
 {
     container_t* container = rund_get_component("Container");
-    container->color = Val((color_t)0xFF0000FF);
+    container->color = Val(Color(0xFF0000FF));
 }
 //...
 Listener(
@@ -71,7 +74,7 @@ Listener(
         .id = "Container",
         .width = Val((size_t)100),
         .height = Val((size_t)100),
-        .color = Val((color_t)0xFFFF0000)
+        .color = Val(Color(0xFFFF0000))
     ),
     .handlers = Handlers(
         .on_pointer_down = click
@@ -91,7 +94,7 @@ Container(size_t width, size_t height, color_t color, component_t child)
 Container(
     .width = Val((size_t)100),
     .height = Val((size_t)100),
-    .color = Val((color_t)0xFFFF0000) // ARGB
+    .color = Val(Color(0xFFFF0000)) // ARGB
     .child = Text(.text = L"Hello there") // this child will be clamped to a 100*100 box with a red background
 )
 ```
@@ -108,7 +111,7 @@ Align(
     .child = Container(
         .width = Val((size_t)100),
         .height = Val((size_t)100),
-        .color = Val((color_t)0xFFFF0000) // ARGB
+        .color = Val(Color(0xFFFF0000)) // ARGB
     )
 )
 ```
@@ -131,7 +134,7 @@ Layout(
         Container(
             .width = Val((size_t)200),
             .height = Val((size_t)100),
-            .color = Val((color_t)0xFF0000FF),
+            .color = Val(Color(0xFF0000FF)),
         )
     ) 
 )
@@ -156,7 +159,7 @@ Layout(
         Container(
             .width = Val((size_t)200),
             .height = Val((size_t)100),
-            .color = Val((color_t)0xFF0000FF),
+            .color = Val(Color(0xFF0000FF)),
         ),
         Flexible(
             .child = Text(

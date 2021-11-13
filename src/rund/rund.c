@@ -153,7 +153,7 @@ void run_app(rund_app_t* rund_app)
 
         for(uint64_t y = 0; y < data.dims.height; y++)
             for(uint64_t x = 0; x < data.dims.width; x++)
-                put_pixel(x + data.coords.x, y + data.coords.y, context.backbuffer.data[(y + data.coords.y) * app->width + (x + data.coords.x)]);
+                put_pixel(x + data.coords.x, y + data.coords.y, context.backbuffer.data[(y + data.coords.y) * app->width + (x + data.coords.x)].argb);
 
         buffer_destroy(&context.backbuffer);
 

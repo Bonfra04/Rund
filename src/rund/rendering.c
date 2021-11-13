@@ -23,7 +23,7 @@ void buffer_destroy(buffer_t* buffer)
 
 color_t blend(color_t bg, color_t fg)
 {
-    if(fg & 0xFF000000)
+    if(fg.a & 0xFF)
         return fg;
     else
         return bg;
