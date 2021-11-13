@@ -92,6 +92,7 @@ Container(
     .width = Val((size_t)100),
     .height = Val((size_t)100),
     .color = Val((color_t)0xFFFF0000) // ARGB
+    .child = Text(.text = L"Hello there") // this child will be clamped to a 100*100 box with a red background
 )
 ```
 
