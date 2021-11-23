@@ -9,6 +9,10 @@ static void event_handler(uint64_t wnd_id, uint8_t event_id)
 {
     switch(event_id)
     {
+        case WND_EVENT_KEY_DOWN:
+            printf("CIAO");
+            break;
+
         default:
             default_event_handler(wnd_id, event_id);
             break;
