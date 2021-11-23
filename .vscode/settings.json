@@ -5,6 +5,7 @@
         "Makefile": true,
         "bonsos.mk": true,
         "linux.mk": true,
+        "windows.mk": true,
         ".gitignore": true,
     }
 }

@@ -1,42 +1,51 @@
 #include <rund.h>
+#include <rund/memory/gc.h>
 
-#include <stdio.h>
-#include <stdarg.h>
+#include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
-void click()
+void click(component_t* self)
 {
-    printf("Hello there\n");
+    listener_t* listener = (listener_t*)rund_get_component("listener");
+    rund_acquire_focus(listener);
 }
 
-int main()
+void type(component_t* self, uint16_t keycode)
+{
+    wchar_t ch = keycode_to_unicode(keycode);
+    if(ch != 0)
+    {
+        text_t* text = (text_t*)rund_get_component("text");
+        size_t old_len = wcslen(text->attributes.text);
+        wchar_t* new_text = gc_alloc(sizeof(wchar_t) * (old_len + 2));
+        wcscpy(new_text, text->attributes.text);
+        new_text[old_len + 0] = ch;
+        new_text[old_len + 1] = L'\0';
+        text->attributes.text = new_text;
+    }
+}
+
+int rund_main()
 {
     rund_app_t app = {
         "Andrea",
         0, 0,
-        1080 / 2, 720 / 2,
-        Row(
-            list(
-                Container(NULL, 100, 100, ContainerDec{ .color = 0x00FF00 }),
-                Expanded(
-                    Container(NULL, ContainerDec{ .color = 0xFFFF00 }),
-                    Flex(2)
+        500, 500,
+        Listener(
+            .id = "listener",
+            .child = Container(
+                .child = Text(
+                    .id = "text",
+                    .text = L""
                 ),
-                Expanded(
-                    Container(NULL, ContainerDec{ .color = 0xFFFFFF }),
-                    Flex(1)
-                ),
-                Align(
-                    Container(NULL, 100, 100, ContainerDec{ .color = 0xFF006F }),
-                    Alignment(0.0f, 1.0f)
-                ),
-                Listener(
-                    ConstrainedBox(
-                        Container(NULL, 1, 1),
-                        BoxConstraints(10, 10, 30, 30)
-                    ),
-                    (Handlers{ .on_pointer_up = NULL, .on_pointer_down = click })
-                )
+                .width = Val((size_t)300),
+                .height = Val((size_t)100),
+                .color = Val(Color(0xFFaaaaaa))
+            ),
+            .handlers = Handlers(
+                .on_pointer_down = click,
+                .on_key_down = type
             )
         )
     };

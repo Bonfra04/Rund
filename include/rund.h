@@ -1,9 +1,12 @@
 #pragma once
 
-#include <stdint.h>
-#include <stddef.h>
 #include <rund/components.h>
-#include <rund/core.h>
+#include <rund/keycodes.h>
+#include <rund/rendering.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct rund_app
 {
@@ -13,11 +16,9 @@ typedef struct rund_app
 	component_t* root;
 } rund_app_t;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void run_app(const rund_app_t* app);
+void run_app(rund_app_t* app);
+component_t* rund_get_component(char id[ID_LEN]);
+void rund_acquire_focus(listener_t* listener);
 
 #ifdef __cplusplus
 }

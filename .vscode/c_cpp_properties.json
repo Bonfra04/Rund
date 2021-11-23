@@ -3,7 +3,8 @@
         {
             "name": "Rund",
             "includePath": [
-                "${workspaceFolder}/include/"
+                "${workspaceFolder}/include/",
+                "${workspaceFolder}/src/"
             ]
         }
     ],

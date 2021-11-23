@@ -2,13 +2,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "gdb",
+            "name": "Debug Rund",
+            "type": "cppdbg",
             "request": "launch",
-            "name": "Launch Program",
-            "target": "${workspaceFolder}/bin/demo.elf",
+            "linux": {
+                "program": "${workspaceFolder}/bin/demo.elf",
+            },
+            "windows": {
+                "program": "${workspaceFolder}/bin/demo.exe",
+            },
             "cwd": "${workspaceFolder}",
-            "preLaunchTask": "build",
-            "terminal": "",
+            "MIMode": "gdb",
+            "preLaunchTask": "make"
         }
     ]
 }

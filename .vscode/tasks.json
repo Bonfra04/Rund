@@ -2,10 +2,13 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build",
+            "label": "make",
             "type": "shell",
             "linux": {
                 "command": "make PLATFORM=LINUX"
+            },
+            "windows": {
+                "command": "make PLATFORM=WINDOWS"
             },
             "problemMatcher": [],
             "group": {
