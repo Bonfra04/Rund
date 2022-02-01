@@ -30,7 +30,7 @@ int rund_main()
 {
     rund_app_t app = {
         "Andrea",
-        0, 0,
+        100, 100,
         500, 500,
         Listener(
             .id = "listener",

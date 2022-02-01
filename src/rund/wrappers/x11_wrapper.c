@@ -41,7 +41,8 @@ void create_window(const rund_app_t* app, events_t _handlers)
     );
 
     XMapWindow(display, window);
-    XStoreName(display, window, app->title);    
+    XStoreName(display, window, app->title);
+    XMoveWindow(display, window, app->x, app->y);
 
     gc = XCreateGC(display, window, 0, NULL);
 }
